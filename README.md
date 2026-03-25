@@ -60,7 +60,7 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 
 2. **ss-writing-plans** — Breaks work into bite-sized tasks (2-5 min each) with exact file paths, complete code, and verification steps. Generates `plan.md` and `tasks.md` in the change directory.
 
-3. **ss-subagent-driven-development** or **ss-executing-plans** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Git operations (commit, push, PR) are presented as commands for you to run.
+3. **ss-subagent-driven-development** or **ss-executing-plans** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Git operations are left to the user.
 
 4. **ss-archive** — Synthesizes design.md + plan.md + tasks.md into an architectural knowledge artifact capturing purpose, decisions, alternatives, scope, and lessons learned.
 
@@ -117,7 +117,7 @@ changes/
 | **Cross-session** | Start over each conversation | Resume from tasks.md |
 | **Knowledge capture** | None | Archive skill → architectural knowledge artifacts |
 | **CLI dependencies** | None | None |
-| **Git operations** | Agent executes directly | Agent presents commands, user executes |
+| **Git operations** | Agent executes directly | User handles git workflow |
 
 ## Philosophy
 
