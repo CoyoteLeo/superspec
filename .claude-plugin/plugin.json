@@ -1,0 +1,10 @@
+{
+  "name": "superspec",
+  "description": "Hybrid skill system combining superpowers workflow quality with structured change management. Brainstorm → Plan → Execute → Archive with persistent task tracking and architectural knowledge artifacts.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Leo"
+  },
+  "license": "MIT",
+  "keywords": ["skills", "tdd", "planning", "architecture", "change-management", "archive"]
+}
