@@ -19,7 +19,7 @@ What's different from superpowers:
 
 ```bash
 /plugin marketplace add CoyoteLeo/superspec
-/plugin install superspec@CoyoteLeo/superspec
+/plugin install sp@CoyoteLeo/superspec
 ```
 
 ### Claude Code (local development)
@@ -33,7 +33,7 @@ claude --plugin-dir /path/to/superspec
 Start a new session and try building something. Superspec skills trigger automatically. Or invoke directly:
 
 ```
-/superspec:brainstorming
+/sp:brainstorming
 ```
 
 ## The Workflow
