@@ -19,7 +19,7 @@ What's different from superpowers:
 
 ```bash
 /plugin marketplace add CoyoteLeo/superspec
-/plugin install sp@CoyoteLeo/superspec
+/plugin install superspec@superspec
 ```
 
 ### Claude Code (local development)
@@ -33,32 +33,40 @@ claude --plugin-dir /path/to/superspec
 Start a new session and try building something. Superspec skills trigger automatically. Or invoke directly:
 
 ```
-/sp:brainstorming
+/superspec:ss-brainstorming
+```
+
+All skills use the `ss-` prefix for easy identification:
+
+```
+/superspec:ss-brainstorming
+/superspec:ss-writing-plans
+/superspec:ss-archive
 ```
 
 ## The Workflow
 
 ```
-brainstorming → changes/YYYY-MM-DD-<topic>/design.md
+ss-brainstorming → changes/YYYY-MM-DD-<topic>/design.md
        ↓
-writing-plans → plan.md + tasks.md
+ss-writing-plans → plan.md + tasks.md
        ↓
-execute (subagent-driven or inline) → tasks.md checkbox tracking
+execute (ss-subagent-driven-development or ss-executing-plans) → tasks.md checkbox tracking
        ↓
-finishing-a-development-branch → git integration
+ss-finishing-a-development-branch → git integration
        ↓
-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
+ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 ```
 
-1. **brainstorming** — Refines ideas through questions, explores alternatives, presents design in sections. Saves to `changes/YYYY-MM-DD-<topic>/design.md`.
+1. **ss-brainstorming** — Refines ideas through questions, explores alternatives, presents design in sections. Saves to `changes/YYYY-MM-DD-<topic>/design.md`.
 
-2. **writing-plans** — Breaks work into bite-sized tasks (2-5 min each) with exact file paths, complete code, and verification steps. Generates `plan.md` and `tasks.md` in the change directory.
+2. **ss-writing-plans** — Breaks work into bite-sized tasks (2-5 min each) with exact file paths, complete code, and verification steps. Generates `plan.md` and `tasks.md` in the change directory.
 
-3. **subagent-driven-development** or **executing-plans** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent).
+3. **ss-subagent-driven-development** or **ss-executing-plans** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent).
 
-4. **finishing-a-development-branch** — Verifies tests, presents options: merge, PR, keep, discard, or archive.
+4. **ss-finishing-a-development-branch** — Verifies tests, presents options: merge, PR, keep, discard, or archive.
 
-5. **archive** — Synthesizes design.md + plan.md + tasks.md into an architectural knowledge artifact capturing purpose, decisions, alternatives, scope, and lessons learned.
+5. **ss-archive** — Synthesizes design.md + plan.md + tasks.md into an architectural knowledge artifact capturing purpose, decisions, alternatives, scope, and lessons learned.
 
 ## What's Inside
 
@@ -66,32 +74,32 @@ archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 
 | Skill | Purpose |
 |-------|---------|
-| **brainstorming** | Socratic design refinement → design.md |
-| **writing-plans** | Implementation plans → plan.md + tasks.md |
-| **subagent-driven-development** | Per-task subagent execution with two-stage review |
-| **executing-plans** | Batch execution with checkpoints (alternative) |
-| **finishing-a-development-branch** | Merge/PR/archive decision workflow |
-| **archive** | Architectural knowledge artifact generation |
+| **ss-brainstorming** | Socratic design refinement → design.md |
+| **ss-writing-plans** | Implementation plans → plan.md + tasks.md |
+| **ss-subagent-driven-development** | Per-task subagent execution with two-stage review |
+| **ss-executing-plans** | Batch execution with checkpoints (alternative) |
+| **ss-finishing-a-development-branch** | Merge/PR/archive decision workflow |
+| **ss-archive** | Architectural knowledge artifact generation |
 
 ### Supporting Skills
 
 | Skill | Purpose |
 |-------|---------|
-| **test-driven-development** | RED-GREEN-REFACTOR cycle |
-| **systematic-debugging** | 4-phase root cause process |
-| **verification-before-completion** | Verify before claiming success |
-| **requesting-code-review** | Dispatch code reviewer subagent |
-| **receiving-code-review** | Respond to feedback with rigor |
-| **dispatching-parallel-agents** | Concurrent subagent workflows |
-| **using-git-worktrees** | Isolated development branches |
-| **writing-skills** | Create new skills following best practices |
-| **using-superpowers** | Introduction to the skills system |
+| **ss-test-driven-development** | RED-GREEN-REFACTOR cycle |
+| **ss-systematic-debugging** | 4-phase root cause process |
+| **ss-verification-before-completion** | Verify before claiming success |
+| **ss-requesting-code-review** | Dispatch code reviewer subagent |
+| **ss-receiving-code-review** | Respond to feedback with rigor |
+| **ss-dispatching-parallel-agents** | Concurrent subagent workflows |
+| **ss-using-git-worktrees** | Isolated development branches |
+| **ss-writing-skills** | Create new skills following best practices |
+| **ss-using-superpowers** | Introduction to the skills system |
 
 ### Agents
 
 | Agent | Purpose |
 |-------|---------|
-| **code-reviewer** | Automated code review subagent |
+| **ss-code-reviewer** | Automated code review subagent |
 | **code-simplifier** | Code clarity and maintainability review |
 
 ## Change Directory Structure
@@ -99,8 +107,8 @@ archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 ```
 changes/
   2025-03-25-auth-refactor/     # Active change
-    design.md                    # From brainstorming
-    plan.md                      # From writing-plans
+    design.md                    # From ss-brainstorming
+    plan.md                      # From ss-writing-plans
     tasks.md                     # Persistent task tracking
   archive/
     2025-03-25-auth-refactor.md  # Knowledge artifact (not file copies)
@@ -127,7 +135,7 @@ changes/
 
 1. Fork the repository
 2. Create a branch for your skill
-3. Follow the `writing-skills` skill for creating and testing new skills
+3. Follow the `ss-writing-skills` skill for creating and testing new skills
 4. Submit a PR
 
 ## License

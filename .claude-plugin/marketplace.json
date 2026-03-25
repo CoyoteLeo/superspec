@@ -6,7 +6,7 @@
   },
   "plugins": [
     {
-      "name": "sp",
+      "name": "superspec",
       "source": "./",
       "description": "Hybrid skill system: superpowers workflow + structured change management + architectural knowledge archives",
       "version": "0.1.0"
