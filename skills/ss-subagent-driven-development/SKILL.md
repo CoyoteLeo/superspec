@@ -65,7 +65,7 @@ digraph process {
     "Read plan from change dir, extract all tasks, create TodoWrite, locate tasks.md" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer subagent for entire implementation" [shape=box];
-    "Use ss-finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "Suggest ss-archive and present git commands" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
@@ -84,7 +84,7 @@ digraph process {
     "Mark task complete in TodoWrite AND tasks.md" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use ss-finishing-a-development-branch";
+    "Dispatch final code reviewer subagent for entire implementation" -> "Suggest ss-archive and present git commands";
 }
 ```
 
@@ -281,13 +281,14 @@ Done!
 ## Integration
 
 **Required workflow skills:**
-- **ss-using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 - **ss-writing-plans** - Creates the plan this skill executes
 - **ss-requesting-code-review** - Code review template for reviewer subagents
-- **ss-finishing-a-development-branch** - Complete development after all tasks
 
 **Subagents should use:**
 - **ss-test-driven-development** - Subagents follow TDD for each task
+
+**Suggested after completion:**
+- **ss-archive** - Capture architectural knowledge from the change
 
 **Alternative workflow:**
 - **ss-executing-plans** - Use for parallel session instead of same-session execution

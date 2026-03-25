@@ -38,9 +38,9 @@ For each task:
 ### Step 3: Complete Development
 
 After all tasks complete and verified:
-- Announce: "I'm using the ss-finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use ss-finishing-a-development-branch
-- Follow that skill to verify tests, present options, execute choice
+1. Run the project test suite to confirm everything passes
+2. Suggest: "All tasks complete. Consider running `/superspec:ss-archive` to capture the architectural knowledge from this change."
+3. Present a summary of what was implemented and any git commands the user may want to run (commit, push, PR creation)
 
 ## When to Stop and Ask for Help
 
@@ -71,6 +71,7 @@ After all tasks complete and verified:
 ## Integration
 
 **Required workflow skills:**
-- **ss-using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 - **ss-writing-plans** - Creates the plan this skill executes
-- **ss-finishing-a-development-branch** - Complete development after all tasks
+
+**Suggested after completion:**
+- **ss-archive** - Capture architectural knowledge from the change

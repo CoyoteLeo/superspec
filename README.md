@@ -53,8 +53,6 @@ ss-writing-plans → plan.md + tasks.md
        ↓
 execute (ss-subagent-driven-development or ss-executing-plans) → tasks.md checkbox tracking
        ↓
-ss-finishing-a-development-branch → git integration
-       ↓
 ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 ```
 
@@ -62,11 +60,9 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 
 2. **ss-writing-plans** — Breaks work into bite-sized tasks (2-5 min each) with exact file paths, complete code, and verification steps. Generates `plan.md` and `tasks.md` in the change directory.
 
-3. **ss-subagent-driven-development** or **ss-executing-plans** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent).
+3. **ss-subagent-driven-development** or **ss-executing-plans** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Git operations (commit, push, PR) are presented as commands for you to run.
 
-4. **ss-finishing-a-development-branch** — Verifies tests, presents options: merge, PR, keep, discard, or archive.
-
-5. **ss-archive** — Synthesizes design.md + plan.md + tasks.md into an architectural knowledge artifact capturing purpose, decisions, alternatives, scope, and lessons learned.
+4. **ss-archive** — Synthesizes design.md + plan.md + tasks.md into an architectural knowledge artifact capturing purpose, decisions, alternatives, scope, and lessons learned.
 
 ## What's Inside
 
@@ -78,7 +74,6 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 | **ss-writing-plans** | Implementation plans → plan.md + tasks.md |
 | **ss-subagent-driven-development** | Per-task subagent execution with two-stage review |
 | **ss-executing-plans** | Batch execution with checkpoints (alternative) |
-| **ss-finishing-a-development-branch** | Merge/PR/archive decision workflow |
 | **ss-archive** | Architectural knowledge artifact generation |
 
 ### Supporting Skills
@@ -91,7 +86,6 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 | **ss-requesting-code-review** | Dispatch code reviewer subagent |
 | **ss-receiving-code-review** | Respond to feedback with rigor |
 | **ss-dispatching-parallel-agents** | Concurrent subagent workflows |
-| **ss-using-git-worktrees** | Isolated development branches |
 | **ss-writing-skills** | Create new skills following best practices |
 | **ss-using-superpowers** | Introduction to the skills system |
 
@@ -123,6 +117,7 @@ changes/
 | **Cross-session** | Start over each conversation | Resume from tasks.md |
 | **Knowledge capture** | None | Archive skill → architectural knowledge artifacts |
 | **CLI dependencies** | None | None |
+| **Git operations** | Agent executes directly | Agent presents commands, user executes |
 
 ## Philosophy
 

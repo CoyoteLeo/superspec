@@ -110,8 +110,8 @@ The architectural knowledge has been captured. The source change directory is pr
 ## Integration
 
 **Called by:**
-- `ss-finishing-a-development-branch` (Option 5)
-- User directly via `/ss-archive`
+- `ss-subagent-driven-development` and `ss-executing-plans` suggest this after all tasks complete
+- User directly via `/superspec:ss-archive`
 
 **Reads from:**
 - Change directory artifacts (design.md, plan.md, tasks.md)
