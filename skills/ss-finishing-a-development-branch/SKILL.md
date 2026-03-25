@@ -9,9 +9,13 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Verify tests → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → Present options → Present commands → User executes.
 
 **Announce at start:** "I'm using the ss-finishing-a-development-branch skill to complete this work."
+
+<GIT-GUARDRAIL>
+Do NOT execute git commands (commit, push, merge, rebase, branch delete, checkout, worktree remove) or gh commands (pr create) directly. Instead, present the exact commands to the user and let them run the commands themselves. You may run read-only git commands (status, log, diff, branch --show-current, worktree list) to gather information.
+</GIT-GUARDRAIL>
 
 ## The Process
 
@@ -64,10 +68,13 @@ Which option?
 
 **Don't add explanation** - keep options concise.
 
-### Step 4: Execute Choice
+### Step 4: Present Commands for User
+
+**Present the commands for the chosen option. Do NOT run them — the user will execute them.**
 
 #### Option 1: Merge Locally
 
+Present to user:
 ```bash
 # Switch to base branch
 git checkout <base-branch>
@@ -85,10 +92,11 @@ git merge <feature-branch>
 git branch -d <feature-branch>
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Present worktree cleanup commands (Step 5)
 
 #### Option 2: Push and Create PR
 
+Present to user:
 ```bash
 # Push branch
 git push -u origin <feature-branch>
@@ -104,7 +112,7 @@ EOF
 )"
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Present worktree cleanup commands (Step 5)
 
 #### Option 3: Keep As-Is
 
@@ -132,24 +140,24 @@ Type 'discard' to confirm.
 
 Wait for exact confirmation.
 
-If confirmed:
+If confirmed, present to user:
 ```bash
 git checkout <base-branch>
 git branch -D <feature-branch>
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Present worktree cleanup commands (Step 5)
 
-### Step 5: Cleanup Worktree
+### Step 5: Worktree Cleanup Commands
 
 **For Options 1, 2, 4:**
 
-Check if in worktree:
+Check if in worktree (you may run this read-only command):
 ```bash
 git worktree list | grep $(git branch --show-current)
 ```
 
-If yes:
+If yes, present to user:
 ```bash
 git worktree remove <worktree-path>
 ```

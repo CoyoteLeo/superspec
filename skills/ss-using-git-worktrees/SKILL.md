@@ -13,6 +13,10 @@ Git worktrees create isolated workspaces sharing the same repository, allowing w
 
 **Announce at start:** "I'm using the ss-using-git-worktrees skill to set up an isolated workspace."
 
+<GIT-GUARDRAIL>
+Do NOT execute git write commands (worktree add, commit, push, branch create) directly. Present the exact commands to the user and let them execute. You may run read-only git commands (worktree list, check-ignore, rev-parse, status) to gather information and verify state.
+</GIT-GUARDRAIL>
+
 ## Directory Selection Process
 
 Follow this priority order:

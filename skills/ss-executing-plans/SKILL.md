@@ -11,6 +11,10 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the ss-executing-plans skill to implement this plan."
 
+<GIT-GUARDRAIL>
+Do NOT execute git commands (commit, push, merge, rebase, branch delete) directly. Present git commands to the user and let them execute. You may run read-only git commands (status, log, diff) to gather information.
+</GIT-GUARDRAIL>
+
 **Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use ss-subagent-driven-development instead of this skill.
 
 ## The Process

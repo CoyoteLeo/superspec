@@ -11,6 +11,10 @@ Execute plan by dispatching fresh subagent per task, with two-stage review after
 
 **Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
 
+<GIT-GUARDRAIL>
+Do NOT execute git commands (commit, push, merge, rebase, branch delete) directly. Present git commands to the user and let them execute. Subagents follow the same rule — they should present commit commands, not run them. You may run read-only git commands (status, log, diff, rev-parse) to gather information.
+</GIT-GUARDRAIL>
+
 ## When to Use
 
 ```dot
