@@ -1,6 +1,6 @@
 ---
 name: ss-brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: Use before creating features, building components, adding functionality, or modifying behavior to explore user intent, requirements, and design before implementation
 ---
 
 # Brainstorming Ideas Into Designs

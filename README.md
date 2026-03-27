@@ -87,7 +87,7 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 | **ss-receiving-code-review** | Respond to feedback with rigor |
 | **ss-dispatching-parallel-agents** | Concurrent subagent workflows |
 | **ss-writing-skills** | Create new skills following best practices |
-| **ss-using-superpowers** | Introduction to the skills system |
+| **ss-using-superspec** | Introduction to the skills system |
 
 ### Agents
 
