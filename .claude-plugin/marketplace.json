@@ -9,7 +9,7 @@
       "name": "superspec",
       "source": "./",
       "description": "Hybrid skill system: superpowers workflow + structured change management + architectural knowledge archives",
-      "version": "0.2.0"
+      "version": "0.2.1"
     }
   ]
 }
