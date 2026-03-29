@@ -149,15 +149,12 @@ Each line corresponds to a `### Task N` section in the plan. Execution skills wi
 
 ## Execution Handoff
 
-After saving the plan and tasks.md, offer execution choice:
+After saving the plan and tasks.md, offer execution choice using the AskUserQuestion tool:
 
-**"Plan complete and saved to `changes/YYYY-MM-DD-<topic>/plan.md`. Tasks tracked in `tasks.md`. Two execution options:**
-
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
-
-**2. Inline Execution** - Execute tasks in this session using ss-executing-plans, batch execution with checkpoints
-
-**Which approach?"**
+- Announce: "Plan complete and saved to `changes/YYYY-MM-DD-<topic>/plan.md`. Tasks tracked in `tasks.md`."
+- Then use AskUserQuestion with these options:
+  - **Subagent-Driven (Recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration
+  - **Inline Execution** — Execute tasks in this session using ss-executing-plans, batch execution with checkpoints
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use ss-subagent-driven-development

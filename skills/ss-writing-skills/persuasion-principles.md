@@ -32,7 +32,7 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 
 **How it works in skills:**
 - Require announcements: "Announce skill usage"
-- Force explicit choices: "Choose A, B, or C"
+- Force explicit choices: use AskUserQuestion tool with selectable options
 - Use tracking: TodoWrite for checklists
 
 **When to use:**

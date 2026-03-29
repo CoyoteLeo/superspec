@@ -11,7 +11,7 @@ Generate an architectural knowledge artifact from a completed change. This is NO
 
 ## Input
 
-Optionally specify a change directory path (e.g., `changes/2025-03-25-auth-refactor/`). If omitted, look for active change directories under `changes/` and ask the user to select one.
+Optionally specify a change directory path (e.g., `changes/2025-03-25-auth-refactor/`). If omitted, look for active change directories under `changes/` and use the AskUserQuestion tool to let the user select one.
 
 ## The Process
 
@@ -19,7 +19,7 @@ Optionally specify a change directory path (e.g., `changes/2025-03-25-auth-refac
 
 1. If path provided, use it
 2. Otherwise, scan `changes/` for directories (excluding `archive/`)
-3. If multiple found, ask user to select
+3. If multiple found, use the AskUserQuestion tool to let user select
 4. If none found, abort with message
 
 ### Step 2: Read Change Artifacts
