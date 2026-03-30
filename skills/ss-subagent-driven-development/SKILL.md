@@ -120,7 +120,7 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 
 **DONE:** Proceed to spec compliance review.
 
-**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
+**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns indicate a design mismatch (plan assumptions vs reality), apply the **Design Deviation Protocol**. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
 **NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
 
@@ -129,8 +129,34 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 2. If the task requires more reasoning, re-dispatch with a more capable model
 3. If the task is too large, break it into smaller pieces
 4. If the plan itself is wrong, escalate to the human
+5. If the blocker is a design mismatch (plan assumptions don't match reality), apply the **Design Deviation Protocol** below instead
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
+
+## Design Deviation Protocol
+
+When an implementer's `BLOCKED` or `DONE_WITH_CONCERNS` status indicates a **design mismatch** (not a context problem), apply this protocol instead of the normal status handling.
+
+**What counts as a design deviation:**
+- Plan assumes an API/dependency/pattern that doesn't exist or works differently
+- Task's approach conflicts with the actual codebase architecture
+- A requirement from the design is impossible or impractical to implement as specified
+
+**What does NOT count (handle inline):**
+- Minor implementation details (variable names, exact line numbers)
+- Test adjustments for framework quirks
+- Small scope adjustments that don't change the design intent
+
+**The protocol:**
+
+1. **Pause** the current task
+2. **Surface** to the user: what was expected (from plan/design) vs what was found, and why it matters
+3. **User decides** via AskUserQuestion:
+   - **Update artifacts and continue** — Edit design.md and/or plan.md, add note `> Updated during implementation: [reason]`, review and adjust remaining tasks, then resume
+   - **Proceed as-is** — Continue with the pragmatic fix, note the deviation in tasks.md as a comment below the task checkbox
+   - **Rethink** — Drop back to brainstorming-level discussion about the approach
+
+After the user decides and any artifact updates are made, resume the normal per-task flow from where it was paused.
 
 ## Prompt Templates
 
@@ -262,6 +288,8 @@ Done!
 - Let implementer self-review replace actual review (both are needed)
 - **Start code quality review before spec compliance is ✅** (wrong order)
 - Move to next task while either review has open issues
+- Silently deviate from the plan without surfacing the mismatch (use Design Deviation Protocol)
+- Decide to update or skip artifacts on behalf of the user (always escalate)
 
 **If subagent asks questions:**
 - Answer clearly and completely
