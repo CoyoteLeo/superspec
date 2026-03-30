@@ -51,7 +51,7 @@ ss-brainstorming → changes/YYYY-MM-DD-<topic>/design.md
        ↓
 ss-writing-plans → plan.md + tasks.md
        ↓
-execute (ss-subagent-driven-development or ss-executing-plans) → tasks.md checkbox tracking
+execute (ss-subagent-driven-development or inline) → tasks.md checkbox tracking
        ↓
 ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 ```
@@ -60,40 +60,27 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 
 2. **ss-writing-plans** — Breaks work into bite-sized tasks (2-5 min each) with exact file paths, complete code, and verification steps. Generates `plan.md` and `tasks.md` in the change directory.
 
-3. **ss-subagent-driven-development** or **ss-executing-plans** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Git operations are left to the user.
+3. **ss-subagent-driven-development** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Git operations are left to the user.
 
 4. **ss-archive** — Synthesizes design.md + plan.md + tasks.md into an architectural knowledge artifact capturing purpose, decisions, alternatives, scope, and lessons learned.
 
 ## What's Inside
 
-### Core Pipeline
+### Skills
 
 | Skill | Purpose |
 |-------|---------|
 | **ss-brainstorming** | Socratic design refinement → design.md |
 | **ss-writing-plans** | Implementation plans → plan.md + tasks.md |
 | **ss-subagent-driven-development** | Per-task subagent execution with two-stage review |
-| **ss-executing-plans** | Batch execution with checkpoints (alternative) |
 | **ss-archive** | Architectural knowledge artifact generation |
-
-### Supporting Skills
-
-| Skill | Purpose |
-|-------|---------|
-| **ss-test-driven-development** | RED-GREEN-REFACTOR cycle |
-| **ss-systematic-debugging** | 4-phase root cause process |
-| **ss-verification-before-completion** | Verify before claiming success |
-| **ss-requesting-code-review** | Dispatch code reviewer subagent |
-| **ss-receiving-code-review** | Respond to feedback with rigor |
-| **ss-dispatching-parallel-agents** | Concurrent subagent workflows |
-| **ss-writing-skills** | Create new skills following best practices |
 | **ss-using-superspec** | Introduction to the skills system |
 
 ### Agents
 
 | Agent | Purpose |
 |-------|---------|
-| **ss-code-reviewer** | Automated code review subagent |
+| **code-reviewer** | Automated code review subagent |
 | **code-simplifier** | Code clarity and maintainability review |
 
 ## Change Directory Structure
@@ -121,7 +108,6 @@ changes/
 
 ## Philosophy
 
-- **Test-Driven Development** — Write tests first, always
 - **Persistent over ephemeral** — Track state across conversations
 - **Knowledge over files** — Archive captures why, not what
 - **Systematic over ad-hoc** — Process over guessing
@@ -130,8 +116,7 @@ changes/
 
 1. Fork the repository
 2. Create a branch for your skill
-3. Follow the `ss-writing-skills` skill for creating and testing new skills
-4. Submit a PR
+3. Submit a PR
 
 ## License
 
@@ -139,4 +124,4 @@ MIT License
 
 ## Credits
 
-Superspec builds on the foundation of [superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://blog.fsck.com). The core workflow skills (brainstorming, TDD, subagent-driven development, code review) originate from that project. Superspec adds structured change management, persistent task tracking, and architectural knowledge archiving.
+Superspec builds on the foundation of [superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://blog.fsck.com). The core workflow skills (brainstorming, subagent-driven development, code review) originate from that project. Superspec adds structured change management, persistent task tracking, and architectural knowledge archiving.
