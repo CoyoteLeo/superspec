@@ -17,25 +17,58 @@ Do NOT invoke any implementation skill, write any code, scaffold any project, or
 
 Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
 
+## Complexity Tier
+
+After exploring project context, assess whether the change needs a **full** or **light** flow, and propose the tier to the user.
+
+**Signals for light:**
+- Single file or small scope change
+- Bug fix with clear reproduction
+- Well-understood pattern (e.g., "add endpoint like existing ones")
+- User describes the solution, not just the problem
+
+**Signals for full (default):**
+- Multiple components or subsystems involved
+- Unclear trade-offs or multiple viable approaches
+- New patterns not yet in the codebase
+- User describes the problem, needs design exploration
+
+**How it works:** After exploring project context, propose the tier using AskUserQuestion:
+> "This looks like a [light/full] change because [reason]. Which tier?"
+> - **Full** — Design doc with approach exploration, then plan (default)
+> - **Light** — Skip design doc, go straight to planning
+
+**If light (user confirms):**
+- Skip checklist items 5-9 (propose approaches, present design, write design doc, spec review loop, user reviews spec)
+- Go from clarifying questions directly to invoking ss-writing-plans
+- No change directory is created during brainstorming — ss-writing-plans creates it
+
+**If full:**
+- Current flow, unchanged
+
 ## Checklist
 
 You MUST create a task for each of these items and complete them in order:
 
 1. **Explore project context** — check files, docs, recent commits
-2. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
-3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-4. **Propose 2-3 approaches** — with trade-offs and your recommendation
-5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — create `changes/YYYY-MM-DD-<topic>/` directory, save to `changes/YYYY-MM-DD-<topic>/design.md` and commit
-7. **Spec review loop** — dispatch spec-document-reviewer subagent with precisely crafted review context (never your session history); fix issues and re-dispatch until approved (max 3 iterations, then surface to human)
-8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Transition to implementation** — invoke ss-writing-plans skill, passing the change directory path
+2. **Assess complexity tier** — infer full/light, propose to user via AskUserQuestion (see Complexity Tier section)
+3. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
+4. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
+5. **Propose 2-3 approaches** — with trade-offs and your recommendation
+6. **Present design** — in sections scaled to their complexity, get user approval after each section
+7. **Write design doc** — create `changes/YYYY-MM-DD-<topic>/` directory, save to `changes/YYYY-MM-DD-<topic>/design.md` and commit
+8. **Spec review loop** — dispatch spec-document-reviewer subagent with precisely crafted review context (never your session history); fix issues and re-dispatch until approved (max 3 iterations, then surface to human)
+9. **User reviews written spec** — ask user to review the spec file before proceeding
+10. **Transition to implementation** — invoke ss-writing-plans skill, passing the change directory path
+
+**Light flow:** If user confirmed light tier in step 2, skip items 5-9 and go directly from item 4 (clarifying questions) to item 10 (transition to implementation).
 
 ## Process Flow
 
 ```dot
 digraph brainstorming {
     "Explore project context" [shape=box];
+    "Complexity tier?" [shape=diamond];
     "Visual questions ahead?" [shape=diamond];
     "Offer Visual Companion\n(own message, no other content)" [shape=box];
     "Ask clarifying questions" [shape=box];
@@ -48,7 +81,9 @@ digraph brainstorming {
     "User reviews spec?" [shape=diamond];
     "Invoke ss-writing-plans" [shape=doublecircle];
 
-    "Explore project context" -> "Visual questions ahead?";
+    "Explore project context" -> "Complexity tier?";
+    "Complexity tier?" -> "Visual questions ahead?" [label="full"];
+    "Complexity tier?" -> "Ask clarifying questions" [label="light"];
     "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
     "Visual questions ahead?" -> "Ask clarifying questions" [label="no"];
     "Offer Visual Companion\n(own message, no other content)" -> "Ask clarifying questions";
@@ -63,6 +98,7 @@ digraph brainstorming {
     "Spec review passed?" -> "User reviews spec?" [label="approved"];
     "User reviews spec?" -> "Write design doc" [label="changes requested"];
     "User reviews spec?" -> "Invoke ss-writing-plans" [label="approved"];
+    "Ask clarifying questions" -> "Invoke ss-writing-plans" [label="light tier"];
 }
 ```
 
