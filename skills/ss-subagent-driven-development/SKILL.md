@@ -310,7 +310,6 @@ Done!
 
 **Required workflow skills:**
 - **ss-writing-plans** - Creates the plan this skill executes
-- **ss-requesting-code-review** - Code review template for reviewer subagents
 
 **Subagents should use:**
 - **ss-test-driven-development** - Subagents follow TDD for each task
