@@ -15,7 +15,7 @@ Do NOT invoke any implementation skill, write any code, scaffold any project, or
 
 ## Anti-Pattern: "This Is Too Simple To Need A Design"
 
-Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
+Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval (unless the user has confirmed a light tier — see Complexity Tier below).
 
 ## Complexity Tier
 
@@ -39,9 +39,11 @@ After exploring project context, assess whether the change needs a **full** or *
 > - **Light** — Skip design doc, go straight to planning
 
 **If light (user confirms):**
-- Skip checklist items 5-9 (propose approaches, present design, write design doc, spec review loop, user reviews spec)
+- Skip checklist items 3 and 5-9 (visual companion offer, propose approaches, present design, write design doc, spec review loop, user reviews spec)
 - Go from clarifying questions directly to invoking ss-writing-plans
 - No change directory is created during brainstorming — ss-writing-plans creates it
+
+Note: User confirmation of the light tier in step 2 serves as the design approval required by the HARD-GATE above — the user is explicitly choosing to skip the design doc for a well-understood change.
 
 **If full:**
 - Current flow, unchanged
@@ -61,7 +63,7 @@ You MUST create a task for each of these items and complete them in order:
 9. **User reviews written spec** — ask user to review the spec file before proceeding
 10. **Transition to implementation** — invoke ss-writing-plans skill, passing the change directory path
 
-**Light flow:** If user confirmed light tier in step 2, skip items 5-9 and go directly from item 4 (clarifying questions) to item 10 (transition to implementation).
+**Light flow:** If user confirmed light tier in step 2, skip items 3 and 5-9 and go directly from item 2 (assess complexity tier) to item 4 (clarifying questions), then to item 10 (transition to implementation).
 
 ## Process Flow
 
