@@ -1,6 +1,8 @@
 # OpenSpec-Inspired Improvements
 
-Three modifications to existing superspec skills, inspired by comparing with OpenSpec's workflow flexibility.
+Modifications to existing superspec skills, inspired by comparing with OpenSpec's workflow flexibility.
+
+**Skills modified:** ss-brainstorming, ss-writing-plans, ss-subagent-driven-development, ss-executing-plans, ss-archive
 
 ## 1. Schema Flexibility (ss-brainstorming)
 
@@ -25,14 +27,17 @@ Add a complexity tier assessment after "Explore project context" and before clar
 - User describes the problem, needs exploration
 
 **If light (user confirms):**
-- Skip checklist items 4-7 (propose approaches, present design, write design doc, spec review loop)
+- Skip checklist items 4-8 (propose approaches, present design, write design doc, spec review loop, user reviews spec)
 - Go from clarifying questions directly to invoking ss-writing-plans
 - ss-writing-plans produces plan.md + tasks.md without a design.md reference
 
 **If full:**
 - Current flow, unchanged
 
-**Impact on ss-writing-plans:** The plan header's design.md reference becomes optional. If no design.md exists, the plan is based on conversation context and the user's description.
+**Impact on ss-writing-plans (also modified):**
+- The `Context` section's assumption that brainstorming always creates design.md becomes conditional: "If a design.md exists in the change directory, use it as the primary reference. Otherwise, base the plan on conversation context."
+- The tasks.md template's `**Design:** design.md` line is only included when design.md exists
+- The plan review loop still runs (reviewer checks plan against design.md if present, or against conversation context if not)
 
 ### Supported flows after this change
 
@@ -91,7 +96,7 @@ Archive produces a knowledge artifact, but the knowledge stays isolated in `chan
 
 Add a "Project Documentation Sync" step after generating the knowledge artifact.
 
-**New step (between current Step 4 "Save to Archive" and Step 5 "Report"):**
+**New Step 5 (between current Step 4 "Save to Archive" and current Step 5 "Report"):**
 
 1. **Analyze the change** — Read change artifacts to understand what was built, what capabilities were added/changed
 2. **Scan for affected project docs** — Look for documentation files that might need updating:
@@ -114,6 +119,7 @@ Add a "Project Documentation Sync" step after generating the knowledge artifact.
 Step 1: Locate change
 Step 2: Read change artifacts
 Step 3: Generate knowledge artifact
-Step 4: Project Documentation Sync (NEW)
-Step 5: Report
+Step 4: Save to archive
+Step 5: Project Documentation Sync (NEW)
+Step 6: Report
 ```
