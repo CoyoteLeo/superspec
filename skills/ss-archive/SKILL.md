@@ -85,7 +85,25 @@ Anything surprising, non-obvious, or worth remembering for future work in this a
 2. Save to: `changes/archive/YYYY-MM-DD-<topic>.md`
 3. If file already exists, ask user whether to overwrite or rename
 
-### Step 5: Report
+### Step 5: Project Documentation Sync
+
+Update project-level documentation to reflect what this change built.
+
+1. **Analyze the change** — Read the change artifacts (design.md, plan.md, tasks.md) to understand what capabilities were added or changed
+2. **Scan for affected project docs** — Look for existing documentation files that might need updating:
+   - Files referenced in the change artifacts (e.g., "modifies the auth flow documented in docs/auth.md")
+   - Well-known doc files (README.md, CHANGELOG, docs/) whose content overlaps with the change
+   - Files describing features, APIs, or architecture that the change touched
+3. **Present findings** — Show user which files were detected and what kind of update each needs (e.g., "README.md — add mention of new light flow option")
+4. **User confirms** — Use AskUserQuestion with multiSelect: which files to update. Include a "None, skip this step" option.
+5. **Edit confirmed files** — Make surgical updates reflecting the change. Keep edits minimal and focused — update existing content, don't rewrite sections.
+
+**Constraints:**
+- Only update existing files (never create new doc files)
+- Surgical edits only (not section rewrites)
+- If no affected docs found, skip silently — don't ask "no docs found, want to create some?"
+
+### Step 6: Report
 
 ```
 ## Archive Complete
@@ -94,6 +112,7 @@ Anything surprising, non-obvious, or worth remembering for future work in this a
 **Archived to:** changes/archive/YYYY-MM-DD-<topic>.md
 **Tasks:** N/M complete
 **Source:** changes/YYYY-MM-DD-<topic>/
+**Docs updated:** [list of files updated, or "None"]
 
 The architectural knowledge has been captured. The source change directory is preserved — delete it manually when ready.
 ```
