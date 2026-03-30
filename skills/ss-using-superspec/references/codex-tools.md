@@ -22,4 +22,4 @@ Add to your Codex config (`~/.codex/config.toml`):
 multi_agent = true
 ```
 
-This enables `spawn_agent`, `wait`, and `close_agent` for skills like `ss-dispatching-parallel-agents` and `ss-subagent-driven-development`.
+This enables `spawn_agent`, `wait`, and `close_agent` for skills like `ss-subagent-driven-development`.

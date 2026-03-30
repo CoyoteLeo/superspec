@@ -129,7 +129,7 @@ The architectural knowledge has been captured. The source change directory is pr
 ## Integration
 
 **Called by:**
-- `ss-subagent-driven-development` and `ss-executing-plans` suggest this after all tasks complete
+- `ss-subagent-driven-development` suggests this after all tasks complete
 - User directly via `/superspec:ss-archive`
 
 **Reads from:**

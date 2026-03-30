@@ -48,19 +48,10 @@ digraph skill_flow {
 
 When multiple skills could apply, use this order:
 
-1. **Process skills first** (ss-brainstorming, ss-systematic-debugging) — these determine HOW to approach the task
-2. **Implementation skills second** (ss-test-driven-development, ss-subagent-driven-development) — these guide execution
+1. **Process skills first** (ss-brainstorming) — determines HOW to approach the task
+2. **Implementation skills second** (ss-subagent-driven-development) — guides execution
 
 "Let's build X" → ss-brainstorming first, then implementation skills.
-"Fix this bug" → ss-systematic-debugging first, then domain-specific skills.
-
-## Skill Types
-
-**Rigid** (TDD, debugging): Follow exactly. Don't adapt away discipline.
-
-**Flexible** (patterns): Adapt principles to context.
-
-The skill itself tells you which.
 
 ## Git Guardrail
 

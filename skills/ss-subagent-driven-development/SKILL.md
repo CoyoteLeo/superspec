@@ -35,7 +35,7 @@ digraph when_to_use {
 }
 ```
 
-**vs. Executing Plans (parallel session):**
+**vs. Inline Mode:**
 - Same session (no context switch)
 - Fresh subagent per task (no context pollution)
 - Two-stage review after each task: spec compliance first, then code quality
@@ -310,9 +310,6 @@ Done!
 
 **Required workflow skills:**
 - **ss-writing-plans** - Creates the plan this skill executes
-
-**Subagents should use:**
-- **ss-test-driven-development** - Subagents follow TDD for each task
 
 **Suggested after completion:**
 - **ss-archive** - Capture architectural knowledge from the change

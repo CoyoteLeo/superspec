@@ -51,7 +51,7 @@ This structure informs the task decomposition. Each task should produce self-con
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use ss-subagent-driven-development (recommended) or ss-executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use ss-subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -149,17 +149,11 @@ Each line corresponds to a `### Task N` section in the plan. Execution skills wi
 
 ## Execution Handoff
 
-After saving the plan and tasks.md, offer execution choice using the AskUserQuestion tool:
+After saving the plan and tasks.md:
 
 - Announce: "Plan complete and saved to `changes/YYYY-MM-DD-<topic>/plan.md`. Tasks tracked in `tasks.md`."
 - Then use AskUserQuestion with these options:
   - **Subagent-Driven (Recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration
-  - **Inline Execution** — Execute tasks in this session using ss-executing-plans, batch execution with checkpoints
+  - **Inline Mode** — Execute tasks directly in this session, batch execution with checkpoints
 
-**If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use ss-subagent-driven-development
-- Fresh subagent per task + two-stage review
-
-**If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use ss-executing-plans
-- Batch execution with checkpoints for review
+**REQUIRED SUB-SKILL:** Use ss-subagent-driven-development (subagent mode or inline mode)
