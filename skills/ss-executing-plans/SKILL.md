@@ -48,6 +48,7 @@ After all tasks complete and verified:
 - Plan has critical gaps preventing starting
 - You don't understand an instruction
 - Verification fails repeatedly
+- Plan assumptions don't match reality (API doesn't exist, dependency conflict) — use **Design Deviation Protocol**
 
 **Ask for clarification rather than guessing.**
 
@@ -58,6 +59,31 @@ After all tasks complete and verified:
 - Fundamental approach needs rethinking
 
 **Don't force through blockers** - stop and ask.
+
+## Design Deviation Protocol
+
+When you discover during task execution that the plan's assumptions don't match reality, apply this protocol.
+
+**What counts as a design deviation:**
+- Plan assumes an API/dependency/pattern that doesn't exist or works differently
+- Task's approach conflicts with the actual codebase architecture
+- A requirement from the design is impossible or impractical to implement as specified
+
+**What does NOT count (handle inline):**
+- Minor implementation details (variable names, exact line numbers)
+- Test adjustments for framework quirks
+- Small scope adjustments that don't change the design intent
+
+**The protocol:**
+
+1. **Pause** the current task
+2. **Surface** to the user: what was expected (from plan/design) vs what was found, and why it matters
+3. **User decides** via AskUserQuestion:
+   - **Update artifacts and continue** — Edit design.md and/or plan.md, add note `> Updated during implementation: [reason]`, review and adjust remaining tasks, then resume
+   - **Proceed as-is** — Continue with the pragmatic fix, note the deviation in tasks.md as a comment below the task checkbox
+   - **Rethink** — Drop back to brainstorming-level discussion about the approach
+
+After the user decides and any artifact updates are made, resume execution from where you paused.
 
 ## Remember
 - Review plan critically first
