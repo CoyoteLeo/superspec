@@ -27,7 +27,7 @@ Add a complexity tier assessment after "Explore project context" and before clar
 - User describes the problem, needs exploration
 
 **If light (user confirms):**
-- Skip checklist items 4-8 (propose approaches, present design, write design doc, spec review loop, user reviews spec)
+- Skip checklist items 3-8 (visual companion offer, propose approaches, present design, write design doc, spec review loop, user reviews spec)
 - Go from clarifying questions directly to invoking ss-writing-plans
 - ss-writing-plans produces plan.md + tasks.md without a design.md reference
 
