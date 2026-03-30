@@ -13,7 +13,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Announce at start:** "I'm using the ss-writing-plans skill to create the implementation plan."
 
-**Context:** This should be run in a dedicated worktree (created by ss-brainstorming skill). The ss-brainstorming skill creates a change directory at `changes/YYYY-MM-DD-<topic>/` with a `design.md` inside it.
+**Context:** Invoked by ss-brainstorming after the design phase (full flow) or directly after clarifying questions (light flow). If a `design.md` exists in the change directory, use it as the primary reference. Otherwise, base the plan on conversation context and the user's description. If the change directory doesn't exist yet (light flow), create it: `changes/YYYY-MM-DD-<topic>/`.
 
 **Save plans to:** `changes/YYYY-MM-DD-<topic>/plan.md` (same change directory as the design doc)
 - (User preferences for plan location override this default)
@@ -135,7 +135,7 @@ After writing the plan, generate a `tasks.md` file in the same change directory.
 
 **Change:** changes/YYYY-MM-DD-<topic>/
 **Plan:** plan.md
-**Design:** design.md
+**Design:** design.md *(omit this line if no design.md exists)*
 
 ## Tasks
 

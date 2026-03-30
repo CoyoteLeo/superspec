@@ -13,7 +13,7 @@ Task tool (general-purpose):
     You are a plan document reviewer. Verify this plan is complete and ready for implementation.
 
     **Plan to review:** [PLAN_FILE_PATH]
-    **Spec for reference:** [SPEC_FILE_PATH]
+    **Spec for reference:** [SPEC_FILE_PATH or "No design doc — plan based on conversation context"]
 
     ## What to Check
 
