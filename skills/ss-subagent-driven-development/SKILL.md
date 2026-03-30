@@ -23,7 +23,7 @@ digraph when_to_use {
     "Tasks mostly independent?" [shape=diamond];
     "Stay in this session?" [shape=diamond];
     "ss-subagent-driven-development" [shape=box];
-    "ss-executing-plans" [shape=box];
+    "Inline mode (see below)" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
@@ -31,7 +31,7 @@ digraph when_to_use {
     "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
     "Stay in this session?" -> "ss-subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "ss-executing-plans" [label="no - parallel session"];
+    "Stay in this session?" -> "Inline mode (see below)" [label="no subagents or tightly coupled"];
 }
 ```
 
@@ -318,5 +318,27 @@ Done!
 **Suggested after completion:**
 - **ss-archive** - Capture architectural knowledge from the change
 
-**Alternative workflow:**
-- **ss-executing-plans** - Use for parallel session instead of same-session execution
+## Inline Mode
+
+When subagents are unavailable or impractical, execute the plan directly in the current session.
+
+**Use inline mode when:**
+- Platform doesn't support subagents
+- Tasks are tightly coupled and need shared context
+- User explicitly requests inline execution
+
+**The process:**
+
+1. Read plan file, review critically — raise concerns before starting
+2. Create TodoWrite with all tasks
+3. For each task:
+   - Mark as in_progress (TodoWrite)
+   - Follow each step exactly
+   - Run verifications as specified
+   - Mark as completed (TodoWrite AND tasks.md: `- [ ]` → `- [x]`)
+4. After all tasks: run full test suite, suggest ss-archive
+
+**When to stop:** Hit a blocker, plan has gaps, instruction unclear, verification fails repeatedly. Ask for clarification rather than guessing.
+
+**Design Deviation Protocol applies** — same as subagent mode (see above).
+
