@@ -1,140 +1,146 @@
 ---
 name: ss-archive
-description: Archive a completed change by generating an architectural knowledge artifact. Use when implementation is complete and you want to capture the design intent, decisions, and target scenarios for future reference.
+description: Use when a change packet's implementation is complete and you want to promote it into the project's permanent spec layout before closing the change out. Typical trigger phrases include "archive this change", "we're done with change X", or invocation after ss-executing-plans / ss-subagent-driven-development report all tasks complete.
 ---
 
 # Archive Change
 
-Generate an architectural knowledge artifact from a completed change. This is NOT about copying files — it's about distilling the essential knowledge that future conversations need to understand why this was built and how it works.
+Promote a completed change into the project's permanent knowledge layout: the active change folder moves under `changes/archive/`, and the capability it implemented gets a machine-validatable `spec.md` plus a human-readable `overview.md` under `specs/<capability>/`.
 
-**Announce at start:** "I'm using the ss-archive skill to capture the architectural knowledge from this change."
+**Announce at start:** "I'm using the ss-archive skill to archive this change and capture its architectural knowledge."
+
+The source change folder is preserved under `changes/archive/` — this is a move, not a delete. The artifact you produce is a distilled companion to the formal spec, not a copy of proposal/design/plan.
 
 ## Input
 
-Optionally specify a change directory path (e.g., `changes/2025-03-25-auth-refactor/`). If omitted, look for active change directories under `changes/` and use the AskUserQuestion tool to let the user select one.
+Optionally specify the change identifier (e.g. `2025-03-25-auth-refactor`). If omitted, list active change folders under `changes/` (excluding `archive/`); if multiple, ask the user. If none, abort.
 
-## The Process
+## Process
 
-### Step 1: Locate the Change
+### Step 1: Read Change Artifacts
 
-1. If path provided, use it
-2. Otherwise, scan `changes/` for directories (excluding `archive/`)
-3. If multiple found, use the AskUserQuestion tool to let user select
-4. If none found, abort with message
-
-### Step 2: Read Change Artifacts
-
-Read all available artifacts from the change directory:
-- `design.md` — architectural design and spec
+From `changes/<change-name>/`:
+- `proposal.md` — scope and motivation
+- `design.md` — architectural design
 - `plan.md` — implementation plan
-- `tasks.md` — task completion status
+- `tasks.md` — completion status
+- `specs/<capability>/spec.md` — the capability spec
 
-Not all artifacts need to exist. Work with what's available.
+Extract the capability name from the `specs/<capability>/` path. If the change spans multiple capabilities, ask the user which to archive — each capability gets its own overview.
 
-### Step 3: Generate Architectural Knowledge Artifact
+Partial artifacts are fine — work with what's there.
 
-Synthesize the artifacts into a single knowledge document. This document answers the questions a future developer (or AI agent) would ask:
+### Step 2: Draft the Overview
+
+Write a single overview document per capability. Target 400–600 words.
 
 **Structure:**
 
 ```markdown
-# [Feature/Change Name]
+# <Capability Name> — Overview
 
-**Date:** YYYY-MM-DD
-**Status:** Completed | Partial (N/M tasks)
-**Change dir:** changes/YYYY-MM-DD-<topic>/
+Human-readable companion to [`spec.md`](spec.md). Start here to understand **why** the capability exists and **how** the pieces fit together; read `spec.md` for the exact requirements and scenarios.
 
-## Purpose & Target Scenarios
+## Purpose
 
-Why was this built? What problem does it solve? Who benefits?
-Describe the specific scenarios this enables — concrete, not abstract.
+Why does this capability exist? What friction did it remove? Describe the concrete user scenarios it enables — not abstract goals.
 
-## Architecture & Key Decisions
+## Architecture & Key Design
 
-High-level architecture: what components exist, how they interact, what patterns are used.
-
-For each significant decision, capture:
-- **Decision:** What was chosen
-- **Alternatives considered:** What was rejected and why
-- **Rationale:** Why this approach won
+Components, interactions, data flow. Each bolded paragraph captures one significant design choice — what was chosen, written as a statement about the shipped system.
 
 ## Scope & Boundaries
 
-What this change does and does NOT cover. What was intentionally deferred or excluded.
+What this capability does and does NOT cover. Non-goals called out so future work doesn't accidentally stretch the contract.
 
 ## Integration Points
 
-How this connects to the rest of the system. What depends on it, what it depends on.
+External services, other repos, infra dependencies. Enough detail to trace "if X breaks, what in our system breaks".
 
-## Lessons & Notes
+## Notes for Future Work
 
-Anything surprising, non-obvious, or worth remembering for future work in this area.
+Forward-looking gotchas for anyone extending or operating this system. Frame as "when you touch X, remember Y" — not "we had a bug and fixed it".
+
+---
+
+**Provenance:** link to the archived change folder.
 ```
 
-**Guidelines:**
-- Write for someone with zero context about this change
-- Prioritize WHY over WHAT — the code shows what, the archive explains why
-- Keep it concise — aim for 200-500 words total, not a novel
-- Include alternatives considered and rejected (from design.md)
-- Note anything that was surprising or non-obvious during implementation
-- If tasks.md shows incomplete tasks, note what was deferred and why
+**Writing rules (important):**
 
-### Step 4: Save to Archive
+- **Describe the shipped system, not history.** Never write "Alternatives considered / rejected" sections. Never frame lessons as "we made a mistake in PR #N". Those narratives belong in git history, not the overview.
+- **Prioritise WHY over WHAT.** `spec.md` already enumerates WHAT; the overview exists to convey intent.
+- **Be concrete.** Use actual file paths, function names, env var names, PR numbers. Vague prose ages badly.
+- **No "alternatives rejected" block.** If a past decision is load-bearing, fold it into the architecture prose as a current-state statement ("X is a safety net, not a tenant boundary").
 
-1. Create directory: `mkdir -p changes/archive/`
-2. Save to: `changes/archive/YYYY-MM-DD-<topic>.md`
-3. If file already exists, ask user whether to overwrite or rename
+### Step 3: Promote the Spec
 
-### Step 5: Project Documentation Sync
+Make sure `specs/<capability>/` exists; create it if needed.
 
-Update project-level documentation to reflect what this change built.
+Promote the change's spec into `specs/<capability>/spec.md`:
 
-1. **Analyze the change** — Read the change artifacts (design.md, plan.md, tasks.md) to understand what capabilities were added or changed
-2. **Scan for affected project docs** — Look for existing documentation files that might need updating:
-   - Files referenced in the change artifacts (e.g., "modifies the auth flow documented in docs/auth.md")
-   - Well-known doc files (README.md, CHANGELOG, docs/) whose content overlaps with the change
-   - Files describing features, APIs, or architecture that the change touched
-3. **Present findings** — Show user which files were detected and what kind of update each needs (e.g., "README.md — add mention of new light flow option")
-4. **User confirms** — Use AskUserQuestion with multiSelect: which files to update. Include a "None, skip this step" option.
-5. **Edit confirmed files** — Make surgical updates reflecting the change. Keep edits minimal and focused — update existing content, don't rewrite sections.
+- **New capability** (no existing `specs/<capability>/spec.md`): the change's spec becomes the capability's spec. Copy the content over.
+- **Existing capability** (spec.md already there): the change's spec is a delta to the existing one. Merge the requirements into the existing spec, respecting whatever add/modify/remove markers the change's spec uses. If you're unsure how to merge, ask the user before overwriting.
 
-**Constraints:**
-- Only update existing files (never create new doc files)
-- Surgical edits only (not section rewrites)
-- If no affected docs found, skip silently — don't ask "no docs found, want to create some?"
+Make sure the final `specs/<capability>/spec.md` has a concrete Purpose section — if it's empty or placeholder text, fill it with 2–3 sentences paraphrased from the overview's Purpose.
+
+### Step 4: Write the Overview
+
+Write the drafted overview to `specs/<capability>/overview.md`. If the file already exists (the capability is being revised, not created), ask the user whether to overwrite or merge — overview.md evolves with the capability.
+
+### Step 5: Move the Source Folder
+
+Move `changes/<change-name>/` to `changes/archive/<YYYY-MM-DD>-<change-name>/` where `<YYYY-MM-DD>` is today's date. This preserves the full decision trail (proposal, design, plan, tasks, spec delta) as a frozen historical record.
+
+Update the Provenance footer in `overview.md` to point at the new archived-folder path.
 
 ### Step 6: Report
 
 ```
 ## Archive Complete
 
-**Change:** <topic>
-**Archived to:** changes/archive/YYYY-MM-DD-<topic>.md
-**Tasks:** N/M complete
-**Source:** changes/YYYY-MM-DD-<topic>/
-**Docs updated:** [list of files updated, or "None"]
-
-The architectural knowledge has been captured. The source change directory is preserved — delete it manually when ready.
+**Change:** <change-name> → changes/archive/<YYYY-MM-DD>-<change-name>/
+**Spec:** specs/<capability>/spec.md — <N> requirements
+**Overview:** specs/<capability>/overview.md
 ```
+
+## File Roles
+
+| Path | Role | Evolves? |
+|------|------|----------|
+| `specs/<capability>/spec.md` | Machine-validatable contract | Yes — new changes add/modify requirements |
+| `specs/<capability>/overview.md` | Human-readable companion | Yes — updated in place by future archives |
+| `changes/archive/<prefixed-name>/` | Frozen source packet (proposal / design / plan / tasks / spec delta) | No — historical |
+
+Future changes touching the same capability should UPDATE `overview.md` rather than create a second one. Don't accumulate per-change archive docs under `specs/`.
 
 ## Guardrails
 
-- Never delete the source change directory automatically — user decides when to clean up
-- No CLI dependencies — pure file operations
-- Work with partial artifacts (not all files need to exist)
-- Ask before overwriting existing archives
-- Focus on architectural knowledge, not implementation details
-- The archive is a knowledge artifact, not a backup
+- **No "alternatives rejected" narratives.** Describe shipped state. If a rejected alternative is still load-bearing context, fold it into architecture prose as current-state.
+- **No backward-looking lessons framing.** "Notes for Future Work" is forward-looking — "when you do X, remember Y", not "we made mistake Z".
+- **Archive = move, not delete.** The source change folder is preserved under `changes/archive/`, not removed. Full history stays accessible.
+- **Ask before overwriting.** If `spec.md` or `overview.md` already exists in `specs/<capability>/`, don't silently clobber — ask the user how to handle it.
 
 ## Integration
 
 **Called by:**
-- `ss-subagent-driven-development` suggests this after all tasks complete
-- User directly via `/superspec:ss-archive`
+- `ss-subagent-driven-development` and `ss-executing-plans` suggest this after all tasks complete.
+- User directly via `/superspec:ss-archive` or `/ss-archive`.
 
 **Reads from:**
-- Change directory artifacts (design.md, plan.md, tasks.md)
+- Active change artifacts under `changes/<change-name>/` (`proposal.md`, `design.md`, `plan.md`, `tasks.md`, `specs/<capability>/spec.md`).
 
-**No dependencies on:**
-- External CLIs (no openspec commands)
-- Specific schema formats
+**Writes to:**
+- `specs/<capability>/spec.md` — promoted from the change's spec (created or merged).
+- `specs/<capability>/overview.md` — newly drafted digest.
+- Moves `changes/<change-name>/` to `changes/archive/<prefixed-name>/`.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Missing or placeholder Purpose in `specs/<capability>/spec.md` | Fill with 2–3 sentences from the overview. Don't ship with an empty or TBD Purpose. |
+| Writing a "Decisions → Alternatives → Rationale" bullet list for every choice | Fold decisions into prose. The overview is a digest, not a decision log. |
+| Running the skill before all tasks are complete | Confirm `tasks.md` shows all tasks done (or the user explicitly accepts the gap) first. |
+| Creating `overview.md` in a capability folder that already has one | Ask first. The existing overview likely carries context from prior changes that shouldn't be silently overwritten. |
+| Deleting the source change folder instead of moving it | Archive is a move to `changes/archive/`, not a delete. The full decision trail must stay accessible. |
