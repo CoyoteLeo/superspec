@@ -10,8 +10,7 @@ What's different from superpowers:
 
 - **Per-change directory** — Each feature gets a `changes/YYYY-MM-DD-<topic>/` directory with `design.md`, `plan.md`, and `tasks.md`. Everything lives together.
 - **Persistent task tracking** — `tasks.md` survives across conversations. Resume where you left off instead of starting over.
-- **Archive skill** — When you're done, capture the architectural knowledge (why it was built, key decisions, alternatives considered) as a standalone artifact. Not file copies — distilled knowledge.
-- **No CLI dependencies** — Pure file operations. No external tools required.
+- **Archive skill** — When you're done, `ss-archive` moves the change folder under `changes/archive/<topic>/` and writes the capability it implemented into `specs/<capability>/` as two files: the machine-validatable `spec.md` and a plain-English `overview.md` companion (why it was built, how the pieces fit, gotchas for future work).
 
 ## Installation
 
@@ -53,7 +52,8 @@ ss-writing-plans → plan.md + tasks.md
        ↓
 execute (ss-subagent-driven-development or inline) → tasks.md checkbox tracking
        ↓
-ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
+ss-archive → changes/archive/<prefixed-name>/  (source folder)
+             + specs/<capability>/{spec.md, overview.md}
 ```
 
 1. **ss-brainstorming** — Refines ideas through questions, explores alternatives, presents design in sections. Saves to `changes/YYYY-MM-DD-<topic>/design.md`.
@@ -62,7 +62,7 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 
 3. **ss-subagent-driven-development** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Git operations are left to the user.
 
-4. **ss-archive** — Synthesizes design.md + plan.md + tasks.md into an architectural knowledge artifact capturing purpose, decisions, alternatives, scope, and lessons learned.
+4. **ss-archive** — Moves the completed change folder under `changes/archive/<prefixed-name>/` and promotes the capability it implemented into `specs/<capability>/`: `spec.md` (machine-validatable contract) plus a human-readable `overview.md` companion covering purpose, architecture, scope, integration points, and forward-looking notes.
 
 ## What's Inside
 
@@ -73,7 +73,7 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 | **ss-brainstorming** | Socratic design refinement → design.md |
 | **ss-writing-plans** | Implementation plans → plan.md + tasks.md |
 | **ss-subagent-driven-development** | Per-task subagent execution with two-stage review |
-| **ss-archive** | Architectural knowledge artifact generation |
+| **ss-archive** | Archive a completed change — moves source folder under `changes/archive/` and writes `specs/<capability>/{spec.md, overview.md}` |
 | **ss-using-superspec** | Introduction to the skills system |
 
 ### Agents
@@ -83,17 +83,26 @@ ss-archive → changes/archive/YYYY-MM-DD-<topic>.md (knowledge artifact)
 | **code-reviewer** | Automated code review subagent |
 | **code-simplifier** | Code clarity and maintainability review |
 
-## Change Directory Structure
+## Directory Structure
 
 ```
 changes/
-  2025-03-25-auth-refactor/     # Active change
-    design.md                    # From ss-brainstorming
-    plan.md                      # From ss-writing-plans
+  2025-03-25-auth-refactor/      # Active change
+    proposal.md                   # Scope and motivation
+    design.md                     # From ss-brainstorming
+    plan.md                       # From ss-writing-plans
     tasks.md                     # Persistent task tracking
+    specs/<capability>/spec.md    # Spec delta for this change
   archive/
-    2025-03-25-auth-refactor.md  # Knowledge artifact (not file copies)
+    2025-04-10-auth-refactor/    # Source folder, moved here after ss-archive
+
+specs/
+  <capability>/
+    spec.md                       # Machine-validatable contract
+    overview.md                   # Human-readable companion to spec.md
 ```
+
+Future changes touching the same capability update `spec.md` and `overview.md` in place rather than accumulating per-change archive files under `specs/`.
 
 ## Key Differences from Superpowers
 
@@ -102,8 +111,7 @@ changes/
 | **State** | Stateless handoffs, TodoWrite only | Per-change directory + persistent tasks.md |
 | **File layout** | `docs/superpowers/specs/` and `plans/` | `changes/YYYY-MM-DD-<topic>/` (co-located) |
 | **Cross-session** | Start over each conversation | Resume from tasks.md |
-| **Knowledge capture** | None | Archive skill → architectural knowledge artifacts |
-| **CLI dependencies** | None | None |
+| **Knowledge capture** | None | Archive skill → capability spec + plain-English overview |
 | **Git operations** | Agent executes directly | User handles git workflow |
 
 ## Philosophy
