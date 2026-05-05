@@ -6,14 +6,12 @@ Use this template when dispatching a code quality reviewer subagent.
 
 **Only dispatch after spec compliance review passes.**
 
-```
-Task tool (ss-code-reviewer):
-  Use template at ./code-reviewer.md
+Dispatch with `Task(general-purpose)`. Paste the contents of `./code-reviewer.md` into the prompt and substitute placeholders:
 
-  WHAT_WAS_IMPLEMENTED: [from implementer's report]
-  PLAN_OR_REQUIREMENTS: Task N from [plan-file]
-  DESCRIPTION: [task summary]
-```
+- `WHAT_WAS_IMPLEMENTED`: from implementer's report
+- `PLAN_OR_REQUIREMENTS`: Task N from [plan-file]
+- `DESCRIPTION`: task summary
+- `BASE_SHA` / `HEAD_SHA`: git SHAs bracketing the change
 
 **In addition to standard code quality concerns, the reviewer should check:**
 - Does each file have one clear responsibility with a well-defined interface?
