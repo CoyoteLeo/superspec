@@ -76,13 +76,6 @@ ss-archive → changes/archive/<prefixed-name>/  (source folder)
 | **ss-archive** | Archive a completed change — moves source folder under `changes/archive/` and writes `specs/<capability>/{spec.md, overview.md}` |
 | **ss-using-superspec** | Introduction to the skills system |
 
-### Agents
-
-| Agent | Purpose |
-|-------|---------|
-| **code-reviewer** | Automated code review subagent |
-| **code-simplifier** | Code clarity and maintainability review |
-
 ## Directory Structure
 
 ```

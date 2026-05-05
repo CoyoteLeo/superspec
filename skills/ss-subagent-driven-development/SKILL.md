@@ -233,7 +233,7 @@ Code reviewer: ✅ Approved
 ...
 
 [After all tasks]
-[Dispatch final ss-code-reviewer]
+[Dispatch final code reviewer subagent]
 Final reviewer: All requirements met, ready to merge
 
 Done!
@@ -303,14 +303,6 @@ Done!
 **If subagent fails task:**
 - Dispatch fix subagent with specific instructions
 - Don't try to fix manually (context pollution)
-
-## Integration
-
-**Required workflow skills:**
-- **ss-writing-plans** - Creates the plan this skill executes
-
-**Suggested after completion:**
-- **ss-archive** - Capture architectural knowledge from the change
 
 ## Inline Mode
 
