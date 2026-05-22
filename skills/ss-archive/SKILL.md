@@ -30,6 +30,23 @@ Extract the capability name from the `specs/<capability>/` path. If the change s
 
 Partial artifacts are fine — work with what's there.
 
+### Step 1a: Completion Check
+
+Before drafting, confirm the change is actually done.
+
+**Task completion.** If `tasks.md` exists, count `- [ ]` (incomplete) vs `- [x]` (complete) entries. If any tasks are still `- [ ]`:
+
+- List the incomplete tasks (subject lines, not full text)
+- Use AskUserQuestion to confirm:
+  - **Archive anyway** — the remaining tasks were dropped on purpose; archive as-is
+  - **Stop** — finish the remaining tasks first, then re-run ss-archive
+
+If `tasks.md` is missing entirely, note it and proceed without a task check.
+
+**Artifact presence.** If `design.md`, `plan.md`, or the capability `spec.md` is missing, list what's missing and confirm via AskUserQuestion before continuing. Missing `proposal.md` is fine — it's optional.
+
+Don't block on warnings; just inform and confirm. The user is the source of truth on whether the change is ready to freeze.
+
 ### Step 2: Draft the Overview
 
 Write a single overview document per capability. Target 400–600 words.
@@ -77,10 +94,25 @@ Forward-looking gotchas for anyone extending or operating this system. Frame as 
 
 Make sure `specs/<capability>/` exists; create it if needed.
 
-Promote the change's spec into `specs/<capability>/spec.md`:
+**New capability** (no existing `specs/<capability>/spec.md`): the change's spec becomes the capability's spec. Copy the content over. Skip the delta preview below.
 
-- **New capability** (no existing `specs/<capability>/spec.md`): the change's spec becomes the capability's spec. Copy the content over.
-- **Existing capability** (spec.md already there): the change's spec is a delta to the existing one. Merge the requirements into the existing spec, respecting whatever add/modify/remove markers the change's spec uses. If you're unsure how to merge, ask the user before overwriting.
+**Existing capability** (spec.md already there): the change's spec is a delta to the existing one. Before merging, do a **delta preview**:
+
+1. Read both files
+2. Summarise what the merge would change, grouped by category:
+   - **Add** — new requirements introduced by the delta
+   - **Modify** — existing requirements whose text changes
+   - **Remove** — requirements deleted by the delta
+   - **Rename** — requirements moved or renamed
+3. Show the summary as a short bulleted list (one line per requirement; refer by section/heading, not full text)
+4. Use AskUserQuestion to confirm:
+   - **Merge now (recommended)** — apply the delta as previewed
+   - **Edit first** — pause so the user can adjust the delta before merging
+   - **Skip merge** — archive the change without touching the canonical spec
+
+If you can't determine the diff cleanly (e.g., the delta uses informal markers you don't recognise), surface that and ask the user how to proceed instead of guessing.
+
+After the user confirms, merge respecting whatever add/modify/remove markers the change's spec uses.
 
 Make sure the final `specs/<capability>/spec.md` has a concrete Purpose section — if it's empty or placeholder text, fill it with 2–3 sentences paraphrased from the overview's Purpose.
 
@@ -141,6 +173,7 @@ Future changes touching the same capability should UPDATE `overview.md` rather t
 |---------|-----|
 | Missing or placeholder Purpose in `specs/<capability>/spec.md` | Fill with 2–3 sentences from the overview. Don't ship with an empty or TBD Purpose. |
 | Writing a "Decisions → Alternatives → Rationale" bullet list for every choice | Fold decisions into prose. The overview is a digest, not a decision log. |
-| Running the skill before all tasks are complete | Confirm `tasks.md` shows all tasks done (or the user explicitly accepts the gap) first. |
+| Running the skill before all tasks are complete | The completion check in Step 1a catches this — confirm with the user before proceeding. |
+| Silently overwriting an existing `specs/<capability>/spec.md` with the delta | Use the delta preview in Step 3: summarise add/modify/remove/rename and confirm before merging. |
 | Creating `overview.md` in a capability folder that already has one | Ask first. The existing overview likely carries context from prior changes that shouldn't be silently overwritten. |
 | Deleting the source change folder instead of moving it | Archive is a move to `changes/archive/`, not a delete. The full decision trail must stay accessible. |

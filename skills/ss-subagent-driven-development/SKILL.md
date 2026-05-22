@@ -120,7 +120,7 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 
 **DONE:** Proceed to spec compliance review.
 
-**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns indicate a design mismatch (plan assumptions vs reality), apply the **Design Deviation Protocol**. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
+**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns indicate a design mismatch (plan assumptions vs reality), handle as a **design deviation** (see below). If they're about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
 **NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
 
@@ -129,34 +129,43 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 2. If the task requires more reasoning, re-dispatch with a more capable model
 3. If the task is too large, break it into smaller pieces
 4. If the plan itself is wrong, escalate to the human
-5. If the blocker is a design mismatch (plan assumptions don't match reality), apply the **Design Deviation Protocol** below instead
+5. If the blocker is a design mismatch (plan assumptions don't match reality), handle as a **design deviation** (see below)
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
-## Design Deviation Protocol
+## Design and Plan Are Living Documents
 
-When an implementer's `BLOCKED` or `DONE_WITH_CONCERNS` status indicates a **design mismatch** (not a context problem), apply this protocol instead of the normal status handling.
+Artifacts (`design.md`, `plan.md`, `tasks.md`) are mutable throughout implementation, not frozen at handoff. Implementation will surface things the design didn't anticipate — that's normal, not an exception. Treat updating an artifact as a routine part of the workflow.
 
-**What counts as a design deviation:**
-- Plan assumes an API/dependency/pattern that doesn't exist or works differently
-- Task's approach conflicts with the actual codebase architecture
-- A requirement from the design is impossible or impractical to implement as specified
+**Two paths:**
 
-**What does NOT count (handle inline):**
-- Minor implementation details (variable names, exact line numbers)
+**Inline adjustments — no escalation needed.** Implementer or controller can adjust without pausing:
+- Minor implementation details (variable names, exact line numbers, file layout)
 - Test adjustments for framework quirks
-- Small scope adjustments that don't change the design intent
+- Small scope adjustments that don't change design intent
+- Adding a sub-step that was implied but not written
+- Tightening a task description after learning what it actually involves
 
-**The protocol:**
+Just do it, note the change in `tasks.md` as a brief comment if it would surprise a future reader.
+
+**Design deviation — surface and let the user decide.** When the implementer hits something that changes design *intent*:
+- Plan assumes an API / dependency / pattern that doesn't exist or works differently
+- Task's approach conflicts with actual codebase architecture
+- A design requirement is impossible or impractical as specified
+- Discovery would meaningfully change how someone would have designed the system if they'd known
+
+The protocol:
 
 1. **Pause** the current task
 2. **Surface** to the user: what was expected (from plan/design) vs what was found, and why it matters
 3. **User decides** via AskUserQuestion:
-   - **Update artifacts and continue** — Edit design.md and/or plan.md, add note `> Updated during implementation: [reason]`, review and adjust remaining tasks, then resume
-   - **Proceed as-is** — Continue with the pragmatic fix, note the deviation in tasks.md as a comment below the task checkbox
+   - **Update artifacts and continue** — Edit `design.md` and/or `plan.md`, add note `> Updated during implementation: [reason]`, review and adjust remaining tasks, then resume
+   - **Proceed as-is** — Continue with the pragmatic fix; note the deviation in `tasks.md` as a comment below the task checkbox
    - **Rethink** — Drop back to brainstorming-level discussion about the approach
 
 After the user decides and any artifact updates are made, resume the normal per-task flow from where it was paused.
+
+**The split is about user-decision-worthiness, not severity.** Anything that would change how the user would have designed the system needs their input. Anything that doesn't is just implementation work — adjust and keep going.
 
 ## Prompt Templates
 
@@ -286,7 +295,7 @@ Done!
 - Let implementer self-review replace actual review (both are needed)
 - **Start code quality review before spec compliance is ✅** (wrong order)
 - Move to next task while either review has open issues
-- Silently deviate from the plan without surfacing the mismatch (use Design Deviation Protocol)
+- Silently deviate from design intent without surfacing it (see Design and Plan Are Living Documents)
 - Decide to update or skip artifacts on behalf of the user (always escalate)
 
 **If subagent asks questions:**
@@ -326,5 +335,5 @@ When subagents are unavailable or impractical, execute the plan directly in the 
 
 **When to stop:** Hit a blocker, plan has gaps, instruction unclear, verification fails repeatedly. Ask for clarification rather than guessing.
 
-**Design Deviation Protocol applies** — same as subagent mode (see above).
+**Design and plan are living documents** — same as subagent mode (see above). Inline adjustments are routine; design deviations surface to the user.
 

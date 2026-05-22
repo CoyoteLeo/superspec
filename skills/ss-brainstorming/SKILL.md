@@ -7,85 +7,116 @@ description: Use before creating features, building components, adding functiona
 
 Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
 
-Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
+Start by understanding the current project context, then choose a mode that fits the work and proceed accordingly.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until the user has approved a design (or the equivalent One-shot artifact bundle). This applies to EVERY project regardless of perceived simplicity. The only exception is **Explore mode**, which is read-only and may not produce code at all.
 </HARD-GATE>
 
 ## Anti-Pattern: "This Is Too Simple To Need A Design"
 
-Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval (unless the user has confirmed a light tier — see Complexity Tier below).
+Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
 
-## Complexity Tier
+## Modes
 
-After exploring project context, assess whether the change needs a **full** or **light** flow, and propose the tier to the user.
+There are three modes. Pick one after exploring project context, and propose it to the user.
 
-**Signals for light:**
-- Single file or small scope change
-- Bug fix with clear reproduction
-- Well-understood pattern (e.g., "add endpoint like existing ones")
-- User describes the solution, not just the problem
+### Explore (stance, not workflow)
 
-**Signals for full (default):**
-- Multiple components or subsystems involved
-- Unclear trade-offs or multiple viable approaches
-- New patterns not yet in the codebase
-- User describes the problem, needs design exploration
+A thinking partner mode for when the user wants to **think through something** before formalising it — investigate a problem space, weigh approaches, sketch architecture, surface unknowns. There is no fixed sequence and no required output.
 
-**How it works:** After exploring project context, propose the tier using AskUserQuestion:
-> "This looks like a [light/full] change because [reason]. Which tier?"
-> - **Full** — Design doc with approach exploration, then plan (default)
-> - **Light** — Skip design doc, go straight to planning
+**Rules:**
+- **Read-only.** May read files, search the codebase, draw ASCII diagrams, compare options. MUST NOT write code or scaffold projects.
+- **MAY produce artifacts only when the user asks** (e.g., "capture this in a design doc"). Capturing thinking is fine; implementing is not.
+- **Open threads, not interrogations.** Surface multiple interesting directions and let the user follow what resonates.
+- **Visual.** ASCII diagrams (state machines, data flows, comparison tables) over paragraphs when helpful.
+- **Adaptive.** Follow interesting tangents; pivot when new info emerges; no obligation to converge.
 
-**If light (user confirms):**
-- Skip checklist items 3 and 5-9 (visual companion offer, propose approaches, present design, write design doc, spec review loop, user reviews spec)
-- Go from clarifying questions directly to invoking ss-writing-plans
-- No change directory is created during brainstorming — ss-writing-plans creates it
+When the thinking crystallises, offer to transition: *"This feels ready to formalise. Want me to switch to Standard or One-shot to write up the design?"* The user decides.
 
-Note: User confirmation of the light tier in step 2 serves as the design approval required by the HARD-GATE above — the user is explicitly choosing to skip the design doc for a well-understood change.
+### Standard (default)
 
-**If full:**
-- Current flow, unchanged
+Full collaborative flow. Use when the change has multiple components, unclear trade-offs, or the user is describing a problem rather than a solution.
+
+Clarifying questions → propose approaches → present design section-by-section → write `design.md` → inline self-review → user reviews → handoff to `ss-writing-plans`.
+
+### One-shot
+
+Scaffold the full artifact bundle (`design.md` + `plan.md` + `tasks.md`) in a single pass without the back-and-forth question loop, then ask the user to review all three together. Use when:
+- The user has already supplied enough context to design and plan without further questions
+- The change follows a well-understood pattern (e.g., "add an endpoint like the existing ones")
+- The user explicitly asks to skip the conversation ("just scaffold it", "one-shot it")
+
+One-shot still produces a real `design.md` — it does not skip the design step, it just skips the *dialogue* around it. The user's review of the written artifacts is the approval gate.
+
+If during scaffolding you discover a real ambiguity that affects the design, **stop and ask** rather than guessing. One-shot trades dialogue for momentum; it does not trade correctness.
+
+## Mode Selection
+
+After exploring project context, propose a mode with AskUserQuestion:
+- **Standard** — Collaborative design flow with clarifying questions (recommended default)
+- **One-shot** — Scaffold design + plan + tasks in one pass, then review together
+- **Explore** — Just think together; no artifacts unless you ask
+
+Lead with the mode you think fits and your reason (e.g., "*This looks like a Standard change because two subsystems need to coordinate.*"). The user can override.
 
 ## Checklist
 
-You MUST create a task for each of these items and complete them in order:
+Tasks for each mode. Create todos and complete in order.
 
-1. **Explore project context** — check files, docs, recent commits
-2. **Assess complexity tier** — infer full/light, propose to user via AskUserQuestion (see Complexity Tier section)
-3. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
-4. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-5. **Propose 2-3 approaches** — with trade-offs and your recommendation
-6. **Present design** — in sections scaled to their complexity, get user approval after each section
-7. **Write design doc** — create `changes/YYYY-MM-DD-<topic>/` directory, save to `changes/YYYY-MM-DD-<topic>/design.md`
-8. **Spec review loop** — dispatch spec-document-reviewer subagent with precisely crafted review context (never your session history); fix issues and re-dispatch until approved (max 3 iterations, then surface to human)
-9. **User reviews written spec** — ask user to review the spec file before proceeding
-10. **Transition to implementation** — invoke ss-writing-plans skill, passing the change directory path
+### Standard
 
-**Light flow:** If user confirmed light tier in step 2, skip items 3 and 5-9 and go directly from item 2 (assess complexity tier) to item 4 (clarifying questions), then to item 10 (transition to implementation).
+1. **Explore project context** — files, docs, recent commits
+2. **Propose mode** — confirm Standard (see Mode Selection)
+3. **Offer visual companion** (if upcoming questions are visual) — own message; see Visual Companion section
+4. **Ask clarifying questions** — one at a time; purpose, constraints, success criteria
+5. **Propose 2–3 approaches** — with trade-offs and your recommendation
+6. **Present design** — in sections scaled to complexity; approval after each section
+7. **Write design doc** — create `changes/YYYY-MM-DD-<topic>/`; save `design.md`
+8. **Inline self-review** — placeholder scan, internal consistency, scope, ambiguity (see Self-Review)
+9. **User reviews written spec** — ask user to review before proceeding
+10. **Transition to implementation** — invoke `ss-writing-plans`, passing the change directory path
+
+### One-shot
+
+1. **Explore project context** — files, docs, recent commits
+2. **Propose mode** — confirm One-shot (see Mode Selection)
+3. **Scaffold design.md** — create `changes/YYYY-MM-DD-<topic>/` and write `design.md` directly from user-supplied context, in a single pass
+4. **Inline self-review** — placeholder scan, internal consistency, scope, ambiguity (see Self-Review)
+5. **Invoke ss-writing-plans** — pass the change directory; let it generate `plan.md` and `tasks.md` in the same continuous pass (no separate user gate between scaffolding and planning)
+6. **Bundled user review** — once all three artifacts exist, ask the user to review them together; revise any of them based on feedback
+
+### Explore
+
+No checklist. Follow the conversation. Read, sketch, compare. Capture artifacts only on explicit request. When the thinking is ready to formalise, offer to switch to Standard or One-shot.
 
 ## Process Flow
 
 ```dot
 digraph brainstorming {
     "Explore project context" [shape=box];
-    "Complexity tier?" [shape=diamond];
+    "Propose mode" [shape=diamond];
+    "Explore mode" [shape=box];
+    "Ready to formalise?" [shape=diamond];
     "Visual questions ahead?" [shape=diamond];
     "Offer Visual Companion\n(own message, no other content)" [shape=box];
     "Ask clarifying questions" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
-    "Spec review loop" [shape=box];
-    "Spec review passed?" [shape=diamond];
-    "User reviews spec?" [shape=diamond];
+    "Write design doc (Standard)" [shape=box];
+    "Scaffold design doc (One-shot)" [shape=box];
+    "Inline self-review" [shape=box];
+    "User reviews artifacts" [shape=diamond];
     "Invoke ss-writing-plans" [shape=doublecircle];
 
-    "Explore project context" -> "Complexity tier?";
-    "Complexity tier?" -> "Visual questions ahead?" [label="full"];
-    "Complexity tier?" -> "Ask clarifying questions" [label="light"];
+    "Explore project context" -> "Propose mode";
+    "Propose mode" -> "Explore mode" [label="Explore"];
+    "Explore mode" -> "Ready to formalise?";
+    "Ready to formalise?" -> "Explore mode" [label="no, keep thinking"];
+    "Ready to formalise?" -> "Propose mode" [label="yes"];
+    "Propose mode" -> "Visual questions ahead?" [label="Standard"];
+    "Propose mode" -> "Scaffold design doc (One-shot)" [label="One-shot"];
     "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
     "Visual questions ahead?" -> "Ask clarifying questions" [label="no"];
     "Offer Visual Companion\n(own message, no other content)" -> "Ask clarifying questions";
@@ -93,18 +124,17 @@ digraph brainstorming {
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Spec review loop";
-    "Spec review loop" -> "Spec review passed?";
-    "Spec review passed?" -> "Spec review loop" [label="issues found,\nfix and re-dispatch"];
-    "Spec review passed?" -> "User reviews spec?" [label="approved"];
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke ss-writing-plans" [label="approved"];
-    "Ask clarifying questions" -> "Invoke ss-writing-plans" [label="light tier"];
+    "User approves design?" -> "Write design doc (Standard)" [label="yes"];
+    "Write design doc (Standard)" -> "Inline self-review";
+    "Scaffold design doc (One-shot)" -> "Inline self-review";
+    "Inline self-review" -> "User reviews artifacts";
+    "User reviews artifacts" -> "Write design doc (Standard)" [label="changes (Standard)"];
+    "User reviews artifacts" -> "Scaffold design doc (One-shot)" [label="changes (One-shot)"];
+    "User reviews artifacts" -> "Invoke ss-writing-plans" [label="approved"];
 }
 ```
 
-**The terminal state is invoking ss-writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after ss-brainstorming is ss-writing-plans.
+**The terminal state is invoking ss-writing-plans** (except Explore, which has no terminal state). Do NOT invoke frontend-design, mcp-builder, or any other implementation skill from ss-brainstorming.
 
 ## The Process
 
@@ -115,7 +145,7 @@ digraph brainstorming {
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
 - Prefer multiple choice questions using the AskUserQuestion tool when possible, but open-ended is fine too
-- Only one question per message - if a topic needs more exploration, break it into multiple questions
+- Only one question per message — if a topic needs more exploration, break it into multiple questions
 - When presenting options, ALWAYS use the AskUserQuestion tool (with its built-in selectable options) instead of asking the user to type A, B, C, etc.
 - Focus on understanding: purpose, constraints, success criteria
 
@@ -148,41 +178,58 @@ digraph brainstorming {
 
 ## After the Design
 
-**Documentation:**
+**Documentation (Standard):**
 
 - Create the change directory: `changes/YYYY-MM-DD-<topic>/`
 - Write the validated design (spec) to `changes/YYYY-MM-DD-<topic>/design.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
 
-**Spec Review Loop:**
-After writing the spec document:
+**Documentation (One-shot):**
 
-1. Dispatch spec-document-reviewer subagent (see spec-document-reviewer-prompt.md)
-2. If Issues Found: fix, re-dispatch, repeat until Approved
-3. If loop exceeds 3 iterations, surface to human for guidance
+- Create `changes/YYYY-MM-DD-<topic>/` and write `design.md` in a single pass from the user's supplied context. Don't ask questions you can reasonably infer answers to; **do** stop and ask if you hit a genuine ambiguity.
 
-**User Review Gate:**
-After the spec review loop passes, ask the user to review the written spec before proceeding:
+## Self-Review
+
+After writing `design.md`, look at it with fresh eyes. This is a checklist you run yourself inline — not a subagent dispatch. Fix issues directly; no re-review needed.
+
+**1. Placeholder scan.** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
+
+**2. Internal consistency.** Do any sections contradict each other? Does the architecture match the feature descriptions? Are the same names/types used the same way throughout?
+
+**3. Scope check.** Is this focused enough for a single implementation plan, or does it need decomposition into sub-projects?
+
+**4. Ambiguity check.** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
+
+**Calibration:** flag only issues that would cause real problems during planning or implementation. Minor wording is not an issue.
+
+## User Review Gate
+
+**Standard:** after self-review, ask the user to review the spec:
 
 > "Spec written to `changes/YYYY-MM-DD-<topic>/design.md`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
 
-Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
+Wait for the user. If they request changes, make them and re-run the self-review. Only proceed once approved.
 
-**Implementation:**
+**One-shot:** the user review is **bundled** — review only happens after `design.md`, `plan.md`, and `tasks.md` are all written. Ask:
 
-- Invoke the ss-writing-plans skill to create a detailed implementation plan
+> "All three artifacts written: `design.md`, `plan.md`, `tasks.md` under `changes/YYYY-MM-DD-<topic>/`. Please review them together and let me know if you want changes to any of them."
+
+Revise any of the three based on feedback, then re-run self-review on whatever changed.
+
+## Implementation Handoff
+
+- Invoke the ss-writing-plans skill to create the implementation plan
 - Do NOT invoke any other skill. ss-writing-plans is the next step.
 
 ## Key Principles
 
-- **One question at a time** - Don't overwhelm with multiple questions
-- **Multiple choice preferred** - Use AskUserQuestion tool for selectable options instead of text-based A/B/C
-- **YAGNI ruthlessly** - Remove unnecessary features from all designs
-- **Explore alternatives** - Always propose 2-3 approaches before settling
-- **Incremental validation** - Present design, get approval before moving on
-- **Be flexible** - Go back and clarify when something doesn't make sense
+- **One question at a time** — Don't overwhelm with multiple questions
+- **Multiple choice preferred** — Use AskUserQuestion tool for selectable options instead of text-based A/B/C
+- **YAGNI ruthlessly** — Remove unnecessary features from all designs
+- **Explore alternatives** — Always propose 2-3 approaches before settling (Standard mode)
+- **Incremental validation** — Present design, get approval before moving on (Standard); bundle review at the end (One-shot)
+- **Be flexible** — Go back and clarify when something doesn't make sense
 
 ## Visual Companion
 
