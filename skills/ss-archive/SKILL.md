@@ -9,7 +9,7 @@ Promote a completed change into the project's permanent knowledge layout: the ac
 
 **Announce at start:** "I'm using the ss-archive skill to archive this change and capture its architectural knowledge."
 
-The source change folder is preserved under `changes/archive/` — this is a move, not a delete. The artifact you produce is a distilled companion to the formal spec, not a copy of proposal/design/plan.
+The source change folder is preserved under `changes/archive/` — this is a move, not a delete. The artifact you produce is a distilled companion to the formal spec, not a copy of design/plan.
 
 ## Input
 
@@ -20,8 +20,7 @@ Optionally specify the change identifier (e.g. `2025-03-25-auth-refactor`). If o
 ### Step 1: Read Change Artifacts
 
 From `changes/<change-name>/`:
-- `proposal.md` — scope and motivation
-- `design.md` — architectural design
+- `design.md` — architectural design and motivation
 - `plan.md` — implementation plan
 - `tasks.md` — completion status
 - `specs/<capability>/spec.md` — the capability spec
@@ -43,7 +42,7 @@ Before drafting, confirm the change is actually done.
 
 If `tasks.md` is missing entirely, note it and proceed without a task check.
 
-**Artifact presence.** If `design.md`, `plan.md`, or the capability `spec.md` is missing, list what's missing and confirm via AskUserQuestion before continuing. Missing `proposal.md` is fine — it's optional.
+**Artifact presence.** If `design.md`, `plan.md`, or the capability `spec.md` is missing, list what's missing and confirm via AskUserQuestion before continuing.
 
 Don't block on warnings; just inform and confirm. The user is the source of truth on whether the change is ready to freeze.
 
@@ -122,7 +121,7 @@ Write the drafted overview to `specs/<capability>/overview.md`. If the file alre
 
 ### Step 5: Move the Source Folder
 
-Move `changes/<change-name>/` to `changes/archive/<YYYY-MM-DD>-<change-name>/` where `<YYYY-MM-DD>` is today's date. This preserves the full decision trail (proposal, design, plan, tasks, spec delta) as a frozen historical record.
+Move `changes/<change-name>/` to `changes/archive/<YYYY-MM-DD>-<change-name>/` where `<YYYY-MM-DD>` is today's date. This preserves the full decision trail (design, plan, tasks, spec delta) as a frozen historical record.
 
 Update the Provenance footer in `overview.md` to point at the new archived-folder path.
 
@@ -142,7 +141,7 @@ Update the Provenance footer in `overview.md` to point at the new archived-folde
 |------|------|----------|
 | `specs/<capability>/spec.md` | Machine-validatable contract | Yes — new changes add/modify requirements |
 | `specs/<capability>/overview.md` | Human-readable companion | Yes — updated in place by future archives |
-| `changes/archive/<prefixed-name>/` | Frozen source packet (proposal / design / plan / tasks / spec delta) | No — historical |
+| `changes/archive/<prefixed-name>/` | Frozen source packet (design / plan / tasks / spec delta) | No — historical |
 
 Future changes touching the same capability should UPDATE `overview.md` rather than create a second one. Don't accumulate per-change archive docs under `specs/`.
 
@@ -160,7 +159,7 @@ Future changes touching the same capability should UPDATE `overview.md` rather t
 - User directly via `/superspec:ss-archive` or `/ss-archive`.
 
 **Reads from:**
-- Active change artifacts under `changes/<change-name>/` (`proposal.md`, `design.md`, `plan.md`, `tasks.md`, `specs/<capability>/spec.md`).
+- Active change artifacts under `changes/<change-name>/` (`design.md`, `plan.md`, `tasks.md`, `specs/<capability>/spec.md`).
 
 **Writes to:**
 - `specs/<capability>/spec.md` — promoted from the change's spec (created or merged).

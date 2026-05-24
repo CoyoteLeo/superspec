@@ -79,7 +79,7 @@ Status column values:
 
 Cross-reference the corresponding backend repo. Use `Grep` / `Read` against the backend service to verify (do NOT guess). If the backend follows a layered architecture (e.g., migration / domain / adapter / service / router, or any equivalent split), call out which layers each gap touches.
 
-Reminder: when the work touches multiple services or both FE + BE, recommend splitting into multiple PRs along service seams. Note the recommended split in `proposal.md`.
+Reminder: when the work touches multiple services or both FE + BE, recommend splitting into multiple PRs along service seams. Note the recommended split in `design.md` (under a "PR split plan" subsection).
 
 ## Stage 4: Discuss & clarify (mandatory)
 
@@ -105,10 +105,11 @@ Do **NOT** ask the user about UI / layout / copy. If you catch yourself drafting
 
 **Files:**
 
-- `proposal.md` — scope, capabilities, impact. **Must include:** "Frontend draft: PR <url>" and the recommended PR-split plan.
-- `design.md` — architecture, decisions, rationale.
-  - UI / Layout section **references PR component paths** (e.g., `frontend/src/pages/<Page>.tsx`); do NOT redraw or restyle.
-  - Backend section is the meat: data model, API contracts, layered design (per the project's architecture), cross-service touchpoints.
+- `design.md` — scope, architecture, decisions, rationale. **Must include:**
+  - **Frontend draft:** link to the source PR (`PR <url>`)
+  - **PR split plan:** recommended PR split along service seams when work spans multiple services or FE + BE
+  - **UI / Layout section** that **references PR component paths** (e.g., `frontend/src/pages/<Page>.tsx`); do NOT redraw or restyle.
+  - **Backend section** is the meat: data model, API contracts, layered design (per the project's architecture), cross-service touchpoints.
   - **Decisions table:** what we kept from the PR, what we changed (and why), what's new.
 - `specs/` — one file per capability:
   - API contract (path, method, request, response, errors, auth)
@@ -128,7 +129,7 @@ Do **NOT** ask the user about UI / layout / copy. If you catch yourself drafting
 
 (Adjust task names to match the project's architectural vocabulary.)
 
-After writing, scan once: does `design.md` exist? does `tasks.md` use `- [ ]`? does `proposal.md` link the PR? If yes, proceed to handoff.
+After writing, scan once: does `design.md` exist and link the source PR? does `tasks.md` use `- [ ]`? If yes, proceed to handoff.
 
 ## Handoff
 

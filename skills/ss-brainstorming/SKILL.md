@@ -54,14 +54,13 @@ Tasks for each mode. Create todos and complete in order.
 
 1. **Explore project context** — files, docs, recent commits
 2. **Propose mode** — confirm Standard (see Mode Selection)
-3. **Offer visual companion** (if upcoming questions are visual) — own message; see Visual Companion section
-4. **Ask clarifying questions** — one at a time; purpose, constraints, success criteria
-5. **Propose 2–3 approaches** — with trade-offs and your recommendation
-6. **Present design** — in sections scaled to complexity; approval after each section
-7. **Write design doc** — create `changes/YYYY-MM-DD-<topic>/`; save `design.md`
-8. **Inline self-review** — placeholder scan, internal consistency, scope, ambiguity (see Self-Review)
-9. **User reviews written spec** — ask user to review before proceeding
-10. **Transition to implementation** — invoke `ss-writing-plans`, passing the change directory path
+3. **Ask clarifying questions** — one at a time; purpose, constraints, success criteria
+4. **Propose 2–3 approaches** — with trade-offs and your recommendation
+5. **Present design** — in sections scaled to complexity; approval after each section
+6. **Write design doc** — create `changes/YYYY-MM-DD-<topic>/`; save `design.md`
+7. **Inline self-review** — placeholder scan, internal consistency, scope, ambiguity (see Self-Review)
+8. **User reviews written spec** — ask user to review before proceeding
+9. **Transition to implementation** — invoke `ss-writing-plans`, passing the change directory path
 
 ### One-shot
 
@@ -69,7 +68,7 @@ Tasks for each mode. Create todos and complete in order.
 2. **Propose mode** — confirm One-shot (see Mode Selection)
 3. **Scaffold design.md** — create `changes/YYYY-MM-DD-<topic>/` and write `design.md` directly from user-supplied context, in a single pass
 4. **Inline self-review** — placeholder scan, internal consistency, scope, ambiguity (see Self-Review)
-5. **Invoke ss-writing-plans** — pass the change directory; let it generate `plan.md` and `tasks.md` in the same continuous pass (no separate user gate between scaffolding and planning)
+5. **Invoke ss-writing-plans with One-shot signal** — pass the change directory and state `mode: one-shot` in the handoff message; ss-writing-plans will generate `plan.md` and `tasks.md` and skip its execution-mode prompt (defaults to Subagent-Driven), keeping the pass continuous
 6. **Bundled user review** — once all three artifacts exist, ask the user to review them together; revise any of them based on feedback
 
 ## Process Flow
@@ -78,8 +77,6 @@ Tasks for each mode. Create todos and complete in order.
 digraph brainstorming {
     "Explore project context" [shape=box];
     "Propose mode" [shape=diamond];
-    "Visual questions ahead?" [shape=diamond];
-    "Offer Visual Companion\n(own message, no other content)" [shape=box];
     "Ask clarifying questions" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
@@ -91,11 +88,8 @@ digraph brainstorming {
     "Invoke ss-writing-plans" [shape=doublecircle];
 
     "Explore project context" -> "Propose mode";
-    "Propose mode" -> "Visual questions ahead?" [label="Standard"];
+    "Propose mode" -> "Ask clarifying questions" [label="Standard"];
     "Propose mode" -> "Scaffold design doc (One-shot)" [label="One-shot"];
-    "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
-    "Visual questions ahead?" -> "Ask clarifying questions" [label="no"];
-    "Offer Visual Companion\n(own message, no other content)" -> "Ask clarifying questions";
     "Ask clarifying questions" -> "Propose 2-3 approaches";
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
@@ -207,21 +201,6 @@ Revise any of the three based on feedback, then re-run self-review on whatever c
 - **Incremental validation** — Present design, get approval before moving on (Standard); bundle review at the end (One-shot)
 - **Be flexible** — Go back and clarify when something doesn't make sense
 
-## Visual Companion
+## Visuals
 
-A browser-based companion for showing mockups, diagrams, and visual options during brainstorming. Available as a tool — not a mode. Accepting the companion means it's available for questions that benefit from visual treatment; it does NOT mean every question goes through the browser.
-
-**Offering the companion:** When you anticipate that upcoming questions will involve visual content (mockups, layouts, diagrams), offer it once for consent:
-> "Some of what we're working on might be easier to explain if I can show it to you in a web browser. I can put together mockups, diagrams, comparisons, and other visuals as we go. This feature is still new and can be token-intensive. Want to try it? (Requires opening a local URL)"
-
-**This offer MUST be its own message.** Do not combine it with clarifying questions, context summaries, or any other content. The message should contain ONLY the offer above and nothing else. Wait for the user's response before continuing. If they decline, proceed with text-only brainstorming.
-
-**Per-question decision:** Even after the user accepts, decide FOR EACH QUESTION whether to use the browser or the terminal. The test: **would the user understand this better by seeing it than reading it?**
-
-- **Use the browser** for content that IS visual — mockups, wireframes, layout comparisons, architecture diagrams, side-by-side visual designs
-- **Use the terminal** for content that is text — requirements questions, conceptual choices, tradeoff lists, scope decisions (use AskUserQuestion tool for option selection)
-
-A question about a UI topic is not automatically a visual question. "What does personality mean in this context?" is a conceptual question — use the terminal. "Which wizard layout works better?" is a visual question — use the browser.
-
-If they agree to the companion, read the detailed guide before proceeding:
-`skills/ss-brainstorming/visual-companion.md`
+For visual content (mockups, wireframes, architecture diagrams, layout comparisons), use **ASCII diagrams** inline in the conversation. They render reliably across every harness, cost nothing in infrastructure, and are sufficient for the level of fidelity brainstorming needs. If the user asks for richer visuals, suggest they sketch in their tool of choice and paste / link images back into the conversation.
