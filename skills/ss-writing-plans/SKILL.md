@@ -153,8 +153,15 @@ Each line corresponds to a `### Task N` section in the plan. Execution skills wi
 After saving the plan and tasks.md:
 
 - Announce: "Plan complete and saved to `changes/YYYY-MM-DD-<topic>/plan.md`. Tasks tracked in `tasks.md`."
-- Then use AskUserQuestion with these options:
-  - **Subagent-Driven (Recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration
-  - **Inline Mode** — Execute tasks directly in this session, batch execution with checkpoints
+- Then decide the execution mode based on the **One-shot signal**:
+
+**If invoked with `mode: one-shot`** (handoff from ss-brainstorming One-shot, or user explicitly states one-shot):
+- Skip the execution-mode prompt — default to **Subagent-Driven**
+- This preserves the One-shot promise of a continuous pass (design → plan → tasks → execution without intermediate prompts)
+- User still gets the bundled review gate before execution actually starts (back in ss-brainstorming)
+
+**Otherwise (Standard mode or no signal)** — use AskUserQuestion with these options:
+- **Subagent-Driven (Recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration
+- **Inline Mode** — Execute tasks directly in this session, batch execution with checkpoints
 
 **REQUIRED SUB-SKILL:** Use ss-subagent-driven-development (subagent mode or inline mode)
