@@ -108,24 +108,17 @@ Expected: PASS
 - DRY, YAGNI, TDD
 - No git write commands (commit, push, merge) — the user handles git
 
-## Self-Review
+## Subagent Review
 
-After writing the complete plan, look at it with fresh eyes against the spec (if any). This is a checklist you run yourself inline — not a subagent dispatch. Fix issues directly; no re-review needed.
+After writing the complete plan, dispatch a `general-purpose` subagent to review it against the spec (if any). Inline self-review is **not** acceptable — empirically the author rubber-stamps their own work and skips codebase verification. The reviewer must open the repo to verify concrete claims (file paths, symbol names, fixtures, signatures, that referenced types/functions actually exist).
 
-**1. Spec coverage.** If `design.md` exists, skim each requirement and point at the task that implements it. List any gaps and add tasks to close them. If no spec, check the plan against the user's stated goals.
+Use the template at `plan-document-reviewer-prompt.md`. Pass the absolute path of `plan.md` and, if it exists, `design.md`.
 
-**2. Placeholder scan.** Search the plan for red flags. These are **plan failures** — never ship them:
-- "TBD", "TODO", "implement later", "fill in details"
-- "Add appropriate error handling" / "add validation" / "handle edge cases" without showing how
-- "Write tests for the above" without actual test code
-- "Similar to Task N" — repeat the code; the engineer may read tasks out of order
-- References to types, functions, or methods not defined in any task
+When the subagent returns:
+- **Approved with no issues** → proceed to tasks.md generation.
+- **Issues found** → fix each one (or, for an issue where you disagree, note your reasoning in `plan.md` so the user can adjudicate), then re-dispatch the reviewer on the updated file. Loop until approved.
 
-**3. Type / signature consistency.** Do the names, types, and signatures used in later tasks match what was defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug. Fix it.
-
-**4. Buildability.** Read each task as if you have zero project context. Could you follow it without getting stuck? If a step describes *what* without showing *how*, expand it.
-
-**Calibration:** flag only issues that would cause an implementer to build the wrong thing or get stuck. Minor wording is not an issue.
+**Calibration:** the reviewer is instructed to flag only issues that would cause an implementer to build the wrong thing or get stuck. Minor wording is not an issue.
 
 ## Tasks.md Generation
 

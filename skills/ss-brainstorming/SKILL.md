@@ -25,7 +25,7 @@ There are two modes. Pick one after exploring project context, and propose it to
 
 Full collaborative flow. Use when the change has multiple components, unclear trade-offs, or the user is describing a problem rather than a solution.
 
-Clarifying questions → propose approaches → present design section-by-section → write `design.md` → inline self-review → user reviews → handoff to `ss-writing-plans`.
+Clarifying questions → propose approaches → present design section-by-section → write `design.md` → subagent review → user reviews → handoff to `ss-writing-plans`.
 
 ### One-shot
 
@@ -40,11 +40,37 @@ If during scaffolding you discover a real ambiguity that affects the design, **s
 
 ## Mode Selection
 
-After exploring project context, propose a mode with AskUserQuestion:
+<HARD-GATE>
+After exploring project context, you MUST propose a mode with AskUserQuestion and wait for the user's selection before doing anything else. This applies in EVERY harness mode — including Auto Mode, `dontAsk`, `acceptEdits`, and any setting that biases against clarifying questions. Mode Selection is NOT a clarifying question; it is a required handoff that decides which Checklist you follow. Never decide the mode unilaterally, even if the request seems obvious or the user already supplied rich context.
+</HARD-GATE>
+
+### Before proposing the mode: the hidden-decision test
+
+Confident user phrasing is **not** the same as design-resolvedness. Before you lean toward One-shot, ask yourself one question:
+
+> **Does the request contain a verb that hides an un-discussed design decision?**
+
+- **Mutating verbs almost always hide decisions** — even when the user sounds certain: *merge, split, consolidate, unify, redesign, refactor, extract, reorg, replace*. The verb itself is the unresolved design question (how to merge? which contract survives? what gets absorbed?). Default Standard.
+- **Additive verbs usually do not** — *add, extend, adopt, apply, enable, scaffold* — **unless** the addition becomes a pattern others will copy (a golden-path endpoint, a first-of-kind auth flow, a reference example). Then it is Standard regardless of file count.
+- **A small file count does not imply One-shot.** A single endpoint can be Standard if its semantics are open. A 25-file change can be One-shot if every item is mechanically prescribed by an external spec.
+
+Other signals that force Standard even when the request feels clear:
+- Changes a **contract** of an existing module (interface, schema, event shape, return type)
+- Crosses **BE↔FE** boundary
+- Touches **concurrency invariants** (locks, leases, queues, retries)
+- A **strategy decision is still open** (how to split? new mechanism? which library?)
+
+One-shot is correct only when **all three** hold: (a) shape is locked by an external spec / convention / existing pattern, (b) work is single-layer or mechanically prescribed, (c) no existing contract changes.
+
+Run this test silently before formulating your recommendation. Then propose the mode you actually believe fits — do not bias toward One-shot to save round-trips.
+
+### Proposing the mode
+
+Propose a mode with AskUserQuestion:
 - **Standard** — Collaborative design flow with clarifying questions (recommended default)
 - **One-shot** — Scaffold design + plan + tasks in one pass, then review together
 
-Lead with the mode you think fits and your reason (e.g., "*This looks like a Standard change because two subsystems need to coordinate.*"). The user can override.
+Lead with the mode you think fits and your reason (e.g., "*This looks like a Standard change because the word 'merge' hides an undecided contract — which runner's interface survives.*"). The user can override.
 
 ## Checklist
 
@@ -58,7 +84,7 @@ Tasks for each mode. Create todos and complete in order.
 4. **Propose 2–3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to complexity; approval after each section
 6. **Write design doc** — create `changes/YYYY-MM-DD-<topic>/`; save `design.md`
-7. **Inline self-review** — placeholder scan, internal consistency, scope, ambiguity (see Self-Review)
+7. **Subagent review** — dispatch reviewer with codebase verification (see Subagent Review)
 8. **User reviews written spec** — ask user to review before proceeding
 9. **Transition to implementation** — invoke `ss-writing-plans`, passing the change directory path
 
@@ -67,7 +93,7 @@ Tasks for each mode. Create todos and complete in order.
 1. **Explore project context** — files, docs, recent commits
 2. **Propose mode** — confirm One-shot (see Mode Selection)
 3. **Scaffold design.md** — create `changes/YYYY-MM-DD-<topic>/` and write `design.md` directly from user-supplied context, in a single pass
-4. **Inline self-review** — placeholder scan, internal consistency, scope, ambiguity (see Self-Review)
+4. **Subagent review** — dispatch reviewer with codebase verification (see Subagent Review)
 5. **Invoke ss-writing-plans with One-shot signal** — pass the change directory and state `mode: one-shot` in the handoff message; ss-writing-plans will generate `plan.md` and `tasks.md` and skip its execution-mode prompt (defaults to Subagent-Driven), keeping the pass continuous
 6. **Bundled user review** — once all three artifacts exist, ask the user to review them together; revise any of them based on feedback
 
@@ -83,7 +109,7 @@ digraph brainstorming {
     "User approves design?" [shape=diamond];
     "Write design doc (Standard)" [shape=box];
     "Scaffold design doc (One-shot)" [shape=box];
-    "Inline self-review" [shape=box];
+    "Subagent review" [shape=box];
     "User reviews artifacts" [shape=diamond];
     "Invoke ss-writing-plans" [shape=doublecircle];
 
@@ -95,9 +121,9 @@ digraph brainstorming {
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
     "User approves design?" -> "Write design doc (Standard)" [label="yes"];
-    "Write design doc (Standard)" -> "Inline self-review";
-    "Scaffold design doc (One-shot)" -> "Inline self-review";
-    "Inline self-review" -> "User reviews artifacts";
+    "Write design doc (Standard)" -> "Subagent review";
+    "Scaffold design doc (One-shot)" -> "Subagent review";
+    "Subagent review" -> "User reviews artifacts";
     "User reviews artifacts" -> "Write design doc (Standard)" [label="changes (Standard)"];
     "User reviews artifacts" -> "Scaffold design doc (One-shot)" [label="changes (One-shot)"];
     "User reviews artifacts" -> "Invoke ss-writing-plans" [label="approved"];
@@ -159,33 +185,31 @@ digraph brainstorming {
 
 - Create `changes/YYYY-MM-DD-<topic>/` and write `design.md` in a single pass from the user's supplied context. Don't ask questions you can reasonably infer answers to; **do** stop and ask if you hit a genuine ambiguity.
 
-## Self-Review
+## Subagent Review
 
-After writing `design.md`, look at it with fresh eyes. This is a checklist you run yourself inline — not a subagent dispatch. Fix issues directly; no re-review needed.
+After writing `design.md`, dispatch a `general-purpose` subagent to review it with fresh eyes. Inline self-review is **not** acceptable — empirically the author rubber-stamps their own work and skips codebase verification. The reviewer must open the repo to verify concrete claims (file paths, symbol names, fixtures, signatures, counts).
 
-**1. Placeholder scan.** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
+Use the template at `spec-document-reviewer-prompt.md`. Pass the absolute path of `design.md` and a short summary of the user's request.
 
-**2. Internal consistency.** Do any sections contradict each other? Does the architecture match the feature descriptions? Are the same names/types used the same way throughout?
+When the subagent returns:
+- **Approved with no issues** → proceed to user review gate.
+- **Issues found** → fix each one (or, for an issue where you disagree, note your reasoning in `design.md` so the user can adjudicate), then re-dispatch the reviewer on the updated file. Loop until approved.
 
-**3. Scope check.** Is this focused enough for a single implementation plan, or does it need decomposition into sub-projects?
-
-**4. Ambiguity check.** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
-
-**Calibration:** flag only issues that would cause real problems during planning or implementation. Minor wording is not an issue.
+**Calibration:** the reviewer is instructed to flag only issues that would cause real problems during planning or implementation. Minor wording is not an issue.
 
 ## User Review Gate
 
-**Standard:** after self-review, ask the user to review the spec:
+**Standard:** after subagent review, ask the user to review the spec:
 
 > "Spec written to `changes/YYYY-MM-DD-<topic>/design.md`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
 
-Wait for the user. If they request changes, make them and re-run the self-review. Only proceed once approved.
+Wait for the user. If they request changes, make them and re-run the subagent review. Only proceed once approved.
 
 **One-shot:** the user review is **bundled** — review only happens after `design.md`, `plan.md`, and `tasks.md` are all written. Ask:
 
 > "All three artifacts written: `design.md`, `plan.md`, `tasks.md` under `changes/YYYY-MM-DD-<topic>/`. Please review them together and let me know if you want changes to any of them."
 
-Revise any of the three based on feedback, then re-run self-review on whatever changed.
+Revise any of the three based on feedback, then re-run subagent review on whatever changed.
 
 ## Implementation Handoff
 
