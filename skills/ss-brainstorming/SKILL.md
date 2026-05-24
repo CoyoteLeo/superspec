@@ -10,7 +10,7 @@ Help turn ideas into fully formed designs and specs through natural collaborativ
 Start by understanding the current project context, then choose a mode that fits the work and proceed accordingly.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until the user has approved a design (or the equivalent One-shot artifact bundle). This applies to EVERY project regardless of perceived simplicity. The only exception is **Explore mode**, which is read-only and may not produce code at all.
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until the user has approved a design (or the equivalent One-shot artifact bundle). This applies to EVERY project regardless of perceived simplicity.
 </HARD-GATE>
 
 ## Anti-Pattern: "This Is Too Simple To Need A Design"
@@ -19,20 +19,7 @@ Every project goes through this process. A todo list, a single-function utility,
 
 ## Modes
 
-There are three modes. Pick one after exploring project context, and propose it to the user.
-
-### Explore (stance, not workflow)
-
-A thinking partner mode for when the user wants to **think through something** before formalising it — investigate a problem space, weigh approaches, sketch architecture, surface unknowns. There is no fixed sequence and no required output.
-
-**Rules:**
-- **Read-only.** May read files, search the codebase, draw ASCII diagrams, compare options. MUST NOT write code or scaffold projects.
-- **MAY produce artifacts only when the user asks** (e.g., "capture this in a design doc"). Capturing thinking is fine; implementing is not.
-- **Open threads, not interrogations.** Surface multiple interesting directions and let the user follow what resonates.
-- **Visual.** ASCII diagrams (state machines, data flows, comparison tables) over paragraphs when helpful.
-- **Adaptive.** Follow interesting tangents; pivot when new info emerges; no obligation to converge.
-
-When the thinking crystallises, offer to transition: *"This feels ready to formalise. Want me to switch to Standard or One-shot to write up the design?"* The user decides.
+There are two modes. Pick one after exploring project context, and propose it to the user.
 
 ### Standard (default)
 
@@ -56,7 +43,6 @@ If during scaffolding you discover a real ambiguity that affects the design, **s
 After exploring project context, propose a mode with AskUserQuestion:
 - **Standard** — Collaborative design flow with clarifying questions (recommended default)
 - **One-shot** — Scaffold design + plan + tasks in one pass, then review together
-- **Explore** — Just think together; no artifacts unless you ask
 
 Lead with the mode you think fits and your reason (e.g., "*This looks like a Standard change because two subsystems need to coordinate.*"). The user can override.
 
@@ -86,18 +72,12 @@ Tasks for each mode. Create todos and complete in order.
 5. **Invoke ss-writing-plans** — pass the change directory; let it generate `plan.md` and `tasks.md` in the same continuous pass (no separate user gate between scaffolding and planning)
 6. **Bundled user review** — once all three artifacts exist, ask the user to review them together; revise any of them based on feedback
 
-### Explore
-
-No checklist. Follow the conversation. Read, sketch, compare. Capture artifacts only on explicit request. When the thinking is ready to formalise, offer to switch to Standard or One-shot.
-
 ## Process Flow
 
 ```dot
 digraph brainstorming {
     "Explore project context" [shape=box];
     "Propose mode" [shape=diamond];
-    "Explore mode" [shape=box];
-    "Ready to formalise?" [shape=diamond];
     "Visual questions ahead?" [shape=diamond];
     "Offer Visual Companion\n(own message, no other content)" [shape=box];
     "Ask clarifying questions" [shape=box];
@@ -111,10 +91,6 @@ digraph brainstorming {
     "Invoke ss-writing-plans" [shape=doublecircle];
 
     "Explore project context" -> "Propose mode";
-    "Propose mode" -> "Explore mode" [label="Explore"];
-    "Explore mode" -> "Ready to formalise?";
-    "Ready to formalise?" -> "Explore mode" [label="no, keep thinking"];
-    "Ready to formalise?" -> "Propose mode" [label="yes"];
     "Propose mode" -> "Visual questions ahead?" [label="Standard"];
     "Propose mode" -> "Scaffold design doc (One-shot)" [label="One-shot"];
     "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
@@ -134,7 +110,7 @@ digraph brainstorming {
 }
 ```
 
-**The terminal state is invoking ss-writing-plans** (except Explore, which has no terminal state). Do NOT invoke frontend-design, mcp-builder, or any other implementation skill from ss-brainstorming.
+**The terminal state is invoking ss-writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill from ss-brainstorming.
 
 ## The Process
 
