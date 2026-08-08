@@ -42,6 +42,10 @@ If during scaffolding you discover a real ambiguity that affects the design, **s
 
 <HARD-GATE>
 After exploring project context, you MUST propose a mode with AskUserQuestion and wait for the user's selection before doing anything else. This applies in EVERY harness mode — including Auto Mode, `dontAsk`, `acceptEdits`, and any setting that biases against clarifying questions. Mode Selection is NOT a clarifying question; it is a required handoff that decides which Checklist you follow. Never decide the mode unilaterally, even if the request seems obvious or the user already supplied rich context.
+
+**The one exception: the user already named the mode in the invocation.** If the arguments passed to this skill explicitly say `one-shot` / `standard` (in any casing, alone or inside a longer instruction such as `one-shot + subagent develop + worktrees + stacked PRs`), that IS the selection — do not ask it back. Echo it in one line (`Mode: One-shot, per your invocation.`) and go straight to that Checklist. Asking a user to re-pick something they just typed is the exact round-trip this gate is supposed to protect, not cause.
+
+This exception is narrow: it needs the mode **named**. Rich context, a confident tone, or a detailed requirement list is NOT a mode selection — those still go through the question.
 </HARD-GATE>
 
 ### Before proposing the mode: the hidden-decision test
@@ -177,6 +181,7 @@ digraph brainstorming {
 **Documentation (Standard):**
 
 - Create the change directory: `changes/YYYY-MM-DD-<topic>/`
+- **One batch, one directory.** Never write into, extend, or recycle a previous batch's change directory, even when the topic overlaps — a finished packet is a record of what shipped, and editing it destroys that. If the new work supersedes an earlier design, say so in the new `design.md` and link the old one.
 - Write the validated design (spec) to `changes/YYYY-MM-DD-<topic>/design.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
@@ -197,17 +202,27 @@ When the subagent returns:
 
 **Calibration:** the reviewer is instructed to flag only issues that would cause real problems during planning or implementation. Minor wording is not an issue.
 
+### When the reviewer never returns
+
+Subagents sometimes finish the work and go idle without emitting a report. That is a harness failure, not an approval — and it is common enough that this skill must say what to do, or the flow silently degrades into the self-review it just forbade.
+
+1. **Re-dispatch once, with the report as a file.** Give the reviewer an absolute output path and tell it its final text output should be one line (`report written`). A report on disk does not depend on the return channel.
+2. **Still nothing → verify it yourself, and say so.** Do the verification the reviewer would have done (open every cited file, check every symbol). Do not keep re-spawning reviewers; a repeatedly-dead channel does not heal, and fleets of stuck agents are their own problem.
+3. **Disclose, every time.** When you reach step 2, tell the user in plain words that **the fresh-context review did not happen** and that the verification below was done by the same context that wrote the document. Never present self-verification as if the review gate passed — the whole point of this section is that authors rubber-stamp their own work, and that risk is unchanged by the reviewer being unreachable.
+
 ## User Review Gate
 
 **Standard:** after subagent review, ask the user to review the spec:
 
-> "Spec written to `changes/YYYY-MM-DD-<topic>/design.md`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+> "Spec written to `/abs/path/to/changes/YYYY-MM-DD-<topic>/design.md`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+
+Quote the **absolute** path, not the repo-relative one — the user may be reading from another terminal, another worktree, or a different repo than the one you are in.
 
 Wait for the user. If they request changes, make them and re-run the subagent review. Only proceed once approved.
 
 **One-shot:** the user review is **bundled** — review only happens after `design.md`, `plan.md`, and `tasks.md` are all written. Ask:
 
-> "All three artifacts written: `design.md`, `plan.md`, `tasks.md` under `changes/YYYY-MM-DD-<topic>/`. Please review them together and let me know if you want changes to any of them."
+> "All three artifacts written: `design.md`, `plan.md`, `tasks.md` under `/abs/path/to/changes/YYYY-MM-DD-<topic>/`. Please review them together and let me know if you want changes to any of them."
 
 Revise any of the three based on feedback, then re-run subagent review on whatever changed.
 

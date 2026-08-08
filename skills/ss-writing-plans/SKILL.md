@@ -120,6 +120,8 @@ When the subagent returns:
 
 **Calibration:** the reviewer is instructed to flag only issues that would cause an implementer to build the wrong thing or get stuck. Minor wording is not an issue.
 
+**If the reviewer never returns**, follow the same three steps as `ss-brainstorming` → *When the reviewer never returns*: re-dispatch once with the report written to an absolute file path, then verify it yourself, and **tell the user the fresh-context review did not happen**. This matters more for a plan than for a design: a plan's `file:line` citations, symbol names and test-helper assumptions are exactly what drifts, and an unverified plan hands those errors straight to the implementer.
+
 ## Tasks.md Generation
 
 After writing the plan, generate a `tasks.md` file in the same change directory. This file extracts the high-level task checklist from the plan:
@@ -145,7 +147,7 @@ Each line corresponds to a `### Task N` section in the plan. Execution skills wi
 
 After saving the plan and tasks.md:
 
-- Announce: "Plan complete and saved to `changes/YYYY-MM-DD-<topic>/plan.md`. Tasks tracked in `tasks.md`."
+- Announce: "Plan complete and saved to `/abs/path/to/changes/YYYY-MM-DD-<topic>/plan.md`. Tasks tracked in `tasks.md`." Use the **absolute** path — the user often opens these from a different terminal or worktree.
 - Then decide the execution mode based on the **One-shot signal**:
 
 **If invoked with `mode: one-shot`** (handoff from ss-brainstorming One-shot, or user explicitly states one-shot):
