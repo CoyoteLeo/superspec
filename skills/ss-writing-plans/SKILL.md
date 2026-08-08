@@ -29,9 +29,11 @@ If the spec covers multiple independent subsystems, it should have been broken i
 Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
 
 - Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
-- You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
+- **A file's boundary is "who uses it", not "how big it is."** Things only one consumer uses belong in that consumer's file. Splitting a single-consumer unit into five files to keep each one short doesn't reduce coupling — it hides the coupling in the import graph, where it is harder to see and easier to break.
+- **Split something out when a second consumer genuinely shares it**, and then make it a real single source of truth rather than a pass-through layer.
 - Files that change together should live together. Split by responsibility, not by technical layer.
-- In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
+- A file that has become hard to read is a prompt to ask "is it actually serving two consumers?" — if yes, split along that seam; if no, leave it whole.
+- In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying is serving two unrelated consumers, including a split in the plan is reasonable.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
 
