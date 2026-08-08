@@ -50,7 +50,7 @@ ss-brainstorming → changes/YYYY-MM-DD-<topic>/design.md
        ↓
 ss-writing-plans → plan.md + tasks.md
        ↓
-execute (ss-subagent-driven-development or inline) → tasks.md checkbox tracking
+execute (ss-subagent-driven-development) → worktree + stacked PRs → tasks.md checkbox tracking
        ↓
 ss-archive → changes/archive/<prefixed-name>/  (source folder)
              + specs/<capability>/{spec.md, overview.md}
@@ -60,7 +60,7 @@ ss-archive → changes/archive/<prefixed-name>/  (source folder)
 
 2. **ss-writing-plans** — Breaks work into bite-sized tasks (2-5 min each) with exact file paths, complete code, and verification steps. Generates `plan.md` and `tasks.md` in the change directory.
 
-3. **ss-subagent-driven-development** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Git operations are left to the user.
+3. **ss-subagent-driven-development** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Works in a git worktree and ships each PR-sized group as its own stacked PR, then verifies CI and answers every review comment inline. Never force-pushes, deletes branches, or merges — merging stays with you.
 
 4. **ss-archive** — Moves the completed change folder under `changes/archive/<prefixed-name>/` and promotes the capability it implemented into `specs/<capability>/`: `spec.md` (machine-validatable contract) plus a human-readable `overview.md` companion covering purpose, architecture, scope, integration points, and forward-looking notes.
 

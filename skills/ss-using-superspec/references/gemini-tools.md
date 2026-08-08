@@ -18,7 +18,7 @@ Skills use Claude Code tool names. When you encounter these in a skill, use your
 
 ## No subagent support
 
-Gemini CLI has no equivalent to Claude Code's `Task` tool. Skills that rely on subagent dispatch (`ss-subagent-driven-development`) will fall back to single-session execution via its Inline Mode.
+Gemini CLI has no equivalent to Claude Code's `Task` tool. `ss-subagent-driven-development` has no single-session fallback — subagent dispatch and per-task two-stage review are the whole mechanism. On Gemini CLI, use `ss-brainstorming` and `ss-writing-plans` to produce `design.md` / `plan.md` / `tasks.md`, then execute the plan by hand: it is written for an implementer with no prior context, so a human (or a second CLI session per task) can follow it directly. Keep ticking `tasks.md` so the change packet stays resumable.
 
 ## Additional Gemini CLI tools
 

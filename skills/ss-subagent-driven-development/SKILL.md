@@ -12,7 +12,14 @@ Execute plan by dispatching fresh subagent per task, with two-stage review after
 **Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
 
 <GIT-GUARDRAIL>
-Do NOT execute git write commands (commit, push, merge, rebase, branch delete) directly. The user handles their own git workflow. You may run read-only git commands (status, log, diff, rev-parse) to gather information.
+You DO drive the branch → commit → push → open-PR flow yourself (see *Worktrees and Stacked PRs*). What you must never do:
+
+- **force-push** — not with `--force`, not with `--force-with-lease`
+- **delete a branch** — local or remote
+- **merge** — neither `git merge` into a base branch nor merging the PR. **The user merges.** After you open a PR, you wait.
+- **rebase a branch that is already pushed** — a stacked branch catches up by merging its base forward, which needs no force-push
+
+Read-only git (status, log, diff, rev-parse) is always fine. If the flow seems to need one of the forbidden operations, stop and ask instead of finding a way around it.
 </GIT-GUARDRAIL>
 
 ## When to Use
@@ -21,25 +28,23 @@ Do NOT execute git write commands (commit, push, merge, rebase, branch delete) d
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
     "ss-subagent-driven-development" [shape=box];
-    "Inline mode (see below)" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
     "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
+    "Tasks mostly independent?" -> "ss-subagent-driven-development" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "ss-subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "Inline mode (see below)" [label="no subagents or tightly coupled"];
 }
 ```
 
-**vs. Inline Mode:**
-- Same session (no context switch)
+This is the only execution mode. Tightly-coupled work that can't be split into independent tasks doesn't get executed inline as a fallback — it goes back to the plan, because "one subagent can't do this alone" usually means the tasks were cut wrong.
+
+**What you get:**
 - Fresh subagent per task (no context pollution)
 - Two-stage review after each task: spec compliance first, then code quality
 - Faster iteration (no human-in-loop between tasks)
+- Each PR-sized group of tasks lands as its own PR (see *Worktrees and Stacked PRs*)
 
 ## The Process
 
@@ -65,6 +70,7 @@ digraph process {
     "Read plan from change dir, extract all tasks, create TodoWrite, locate tasks.md" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer subagent for entire implementation" [shape=box];
+    "Open PR per group; CI green + every review comment answered inline" [shape=box];
     "Suggest ss-archive" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -84,7 +90,8 @@ digraph process {
     "Mark task complete in TodoWrite AND tasks.md" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Suggest ss-archive";
+    "Dispatch final code reviewer subagent for entire implementation" -> "Open PR per group; CI green + every review comment answered inline";
+    "Open PR per group; CI green + every review comment answered inline" -> "Suggest ss-archive";
 }
 ```
 
@@ -313,27 +320,48 @@ Done!
 - Dispatch fix subagent with specific instructions
 - Don't try to fix manually (context pollution)
 
-## Inline Mode
+## Worktrees and Stacked PRs
 
-When subagents are unavailable or impractical, execute the plan directly in the current session.
+This is the default shipping shape, not an opt-in. The plan already says which tasks belong to which PR; this section says how those groups reach GitHub.
 
-**Use inline mode when:**
-- Platform doesn't support subagents
-- Tasks are tightly coupled and need shared context
-- User explicitly requests inline execution
+### One worktree per repo
 
-**The process:**
+Work in a git worktree, not the main checkout — the user very likely has other sessions and other branches in flight, and a shared checkout makes two agents fight over one index.
 
-1. Read plan file, review critically — raise concerns before starting
-2. Create TodoWrite with all tasks
-3. For each task:
-   - Mark as in_progress (TodoWrite)
-   - Follow each step exactly
-   - Run verifications as specified
-   - Mark as completed (TodoWrite AND tasks.md: `- [ ]` → `- [x]`)
-4. After all tasks: run full test suite, suggest ss-archive
+1. `git fetch origin` and branch from `origin/<base>` directly. Do not `git pull` the current branch.
+2. Put the worktree at `.worktrees/<kebab-topic>/` inside the repo.
+3. Copy the gitignored env files the repo needs (`.env*`, `.npmrc`, …) — they are absent in a fresh worktree by definition, and their absence usually surfaces as a confusing runtime error, not a missing-file error.
+4. Install dependencies in the worktree.
+5. Check the repo's own conventions file (`CLAUDE.md` / `AGENTS.md` / `CONTRIBUTING.md`) for a worktree recipe and prefer it over these steps.
 
-**When to stop:** Hit a blocker, plan has gaps, instruction unclear, verification fails repeatedly. Ask for clarification rather than guessing.
+**One worktree serves a whole stack.** Stacked PRs are sequential by construction, so reuse the same worktree and create each next branch inside it — that also keeps the base relationships obvious and saves repeated dependency installs.
 
-**Design and plan are living documents** — same as subagent mode (see above). Inline adjustments are routine; design deviations surface to the user.
+### Stacking
 
+Each PR's branch is based on the previous PR's branch, not on the base branch:
+
+- PR1: `feat/a` → base `develop`
+- PR2: `feat/b` → base `feat/a`
+- PR3: `feat/c` → base `feat/b`
+
+Open each PR with its real base and say in the body which PR it is stacked on and in what order they should merge.
+
+**When something changes underneath you, merge the base forward — never rebase, never force-push.** Two situations need this:
+
+- You fixed something in PR1 after PR2 already existed → `git checkout feat/b && git merge feat/a`.
+- The user merged PR1 → GitHub retargets PR2's base to the base branch automatically, and **PR2 will almost certainly show conflicts**: a squash merge collapses PR1 into one new commit that shares no history with the commits PR2 carries, so git cannot tell the two are the same change. Merge `origin/<base>` forward and resolve.
+
+Resolving those conflicts is mostly "keep our side", but verify it mechanically rather than trusting that — after resolving, check that nothing which existed on the base got dropped (for a test file, compare the list of test names on both sides; for source, list the lines that exist only on the base side and account for each one). A conflict resolved by taking one side wholesale is exactly where a silently-duplicated declaration or a lost test hides.
+
+### After opening a PR
+
+Opening the PR is not the end of the task. Finish these before reporting the PR as done:
+
+1. **Wait for CI and read it.** Poll until every check settles. A summary/aggregate job failing usually just means one real job failed — find the real one and read its log rather than guessing from the name.
+2. **Read the PR's review comments** — bots included. There are two kinds and both matter: line-anchored review comments, and the review's summary body.
+3. **Judge each comment on the code, not on its tone.** Open the file and check the claim. A confident bot is often right and sometimes wrong; both outcomes need evidence.
+4. **Fix what is real.** If you disagree, that is a legitimate outcome — but it has to be argued, not ignored.
+5. **Reply to every comment, inline in its own thread.** Say what you changed (with the commit) or why you are not changing it. If a fix has no test covering it, say so in the reply instead of letting it read as verified. Do not answer a line-anchored comment with a new top-level comment — it loses the anchor.
+6. **A stacked PR gets these fixes on its own branch**, then merge that branch forward into the PRs above it so the stack stays consistent.
+
+Then hand back to the user: they merge. If CI is red for a reason you cannot attribute to your change (a known flake, an unrelated job), say that explicitly and say what evidence you have — never report red CI as green, and never re-run a job repeatedly hoping it turns.
