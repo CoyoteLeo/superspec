@@ -12,14 +12,18 @@ Execute plan by dispatching fresh subagent per task, with two-stage review after
 **Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
 
 <GIT-GUARDRAIL>
-You DO drive the branch → commit → push → open-PR flow yourself (see *Worktrees and Stacked PRs*). What you must never do:
+You DO drive the branch → commit → push → open-PR → rebase-the-stack → clean-up flow yourself (see *Worktrees and Stacked PRs*).
 
-- **force-push** — not with `--force`, not with `--force-with-lease`
-- **delete a branch** — local or remote
-- **merge** — neither `git merge` into a base branch nor merging the PR. **The user merges.** After you open a PR, you wait.
-- **rebase a branch that is already pushed** — a stacked branch catches up by merging its base forward, which needs no force-push
+**Allowed, and expected:**
+- **rebase + `git push --force-with-lease`**, but ONLY on a branch belonging to a PR **you opened in this session**. Maintaining a stack is impossible without it.
+- **deleting a worktree and a branch** — but only after you have confirmed its PR actually merged (see *After the user says it merged*).
 
-Read-only git (status, log, diff, rev-parse) is always fine. If the flow seems to need one of the forbidden operations, stop and ask instead of finding a way around it.
+**Never:**
+- **bare `git push --force`.** `--force-with-lease` or nothing; the lease is what stops you from silently discarding someone else's push.
+- **force-pushing anything you did not open** — a base branch (`main`/`master`/`develop`), a shared branch, or somebody else's PR branch. Not even to "fix" it.
+- **merging.** Neither `git merge` into a base branch nor merging the PR itself. **The user merges.** After you open a PR, you wait.
+
+Read-only git (status, log, diff, rev-parse) is always fine. If the flow seems to need something outside these boundaries, stop and ask instead of finding a way around it.
 </GIT-GUARDRAIL>
 
 ## When to Use
@@ -346,12 +350,28 @@ Each PR's branch is based on the previous PR's branch, not on the base branch:
 
 Open each PR with its real base and say in the body which PR it is stacked on and in what order they should merge.
 
-**When something changes underneath you, merge the base forward — never rebase, never force-push.** Two situations need this:
+### Keeping the stack current: rebase, and force-push with a lease
 
-- You fixed something in PR1 after PR2 already existed → `git checkout feat/b && git merge feat/a`.
-- The user merged PR1 → GitHub retargets PR2's base to the base branch automatically, and **PR2 will almost certainly show conflicts**: a squash merge collapses PR1 into one new commit that shares no history with the commits PR2 carries, so git cannot tell the two are the same change. Merge `origin/<base>` forward and resolve.
+A stack is maintained by **rebasing**, and rebasing a pushed branch means force-pushing it. That is allowed here — see the guardrail for the exact boundary — and it is the right tool: the alternative (merging the base forward) leaves a merge commit in every downstream branch and, after a squash merge, produces a guaranteed conflict on every single PR in the stack.
 
-Resolving those conflicts is mostly "keep our side", but verify it mechanically rather than trusting that — after resolving, check that nothing which existed on the base got dropped (for a test file, compare the list of test names on both sides; for source, list the lines that exist only on the base side and account for each one). A conflict resolved by taking one side wholesale is exactly where a silently-duplicated declaration or a lost test hides.
+Always `--force-with-lease`, never bare `--force`. The lease is what turns "I am rewriting my own branch" into "I am rewriting my own branch **and nobody else pushed to it while I wasn't looking**".
+
+**After the user merges PR1, the branch below is NOT rebased with a plain `git rebase origin/develop`.** A squash merge collapsed PR1 into one new commit on the base; a plain rebase would try to replay PR1's original commits on top of it and conflict with itself. Cut them off explicitly with the old base branch as the upstream:
+
+```
+git fetch origin
+git checkout feat/b
+git rebase --onto origin/develop feat/a    # replay ONLY feat/a..feat/b onto the new base
+git push --force-with-lease
+```
+
+Then repeat down the stack (`--onto origin/develop feat/b` for `feat/c`, and so on).
+
+**Sequencing constraint: rebase the whole stack before deleting the merged branch.** `feat/a` is the ref that tells `--onto` where PR2's own commits begin. Delete it first and you have to hunt for the SHA by hand.
+
+If you fixed something in PR1 while PR2 already existed, same move: rebase `feat/b` onto the updated `feat/a` and force-push with a lease.
+
+A rebase can still conflict. When it does, resolving it is usually "keep our side", but **verify that mechanically instead of trusting it** — check that nothing which existed on the other side got dropped (for a test file, compare the list of test names on both sides; for source, list the lines that exist only on the other side and account for each one). A conflict resolved by taking one side wholesale is exactly where a silently-duplicated declaration or a lost test hides.
 
 ### After opening a PR
 
@@ -362,6 +382,17 @@ Opening the PR is not the end of the task. Finish these before reporting the PR 
 3. **Judge each comment on the code, not on its tone.** Open the file and check the claim. A confident bot is often right and sometimes wrong; both outcomes need evidence.
 4. **Fix what is real.** If you disagree, that is a legitimate outcome — but it has to be argued, not ignored.
 5. **Reply to every comment, inline in its own thread.** Say what you changed (with the commit) or why you are not changing it. If a fix has no test covering it, say so in the reply instead of letting it read as verified. Do not answer a line-anchored comment with a new top-level comment — it loses the anchor.
-6. **A stacked PR gets these fixes on its own branch**, then merge that branch forward into the PRs above it so the stack stays consistent.
+6. **A stacked PR gets these fixes on its own branch**, then rebase the PRs above it onto it and force-push with a lease, so the stack stays consistent.
 
 Then hand back to the user: they merge. If CI is red for a reason you cannot attribute to your change (a known flake, an unrelated job), say that explicitly and say what evidence you have — never report red CI as green, and never re-run a job repeatedly hoping it turns.
+
+### After the user says it merged
+
+"merged" is a trigger, not just news. Do all of this without being asked again:
+
+1. **Verify it actually landed — from the base branch, not from the PR page.** `git fetch origin`, confirm the PR reads `MERGED`, then read the change back out of `origin/<base>` (e.g. grep `git show origin/<base>:<path>` for something the change introduced). A green PR page and landed content are two different claims, and a squash or rebase merge rewrites the SHA, so you cannot match commits by hash.
+2. **Rebase everything below it in the stack** and force-push with a lease (see *Keeping the stack current*). Do this **before** step 3 — the merged branch is the ref that rebase needs.
+3. **Delete the worktree, then the branch.** Worktree first: a branch checked out in a worktree cannot be deleted. Expect to need `-D` rather than `-d`, because a squash or rebase merge leaves the branch at a different SHA than what landed and git therefore does not consider it merged. That is precisely why step 1 exists — `-D` discards git's own safety check, so the evidence has to come from the read-back instead.
+4. **Report what you deleted**, and leave alone anything whose provenance you cannot establish. A branch you did not open in this session is not yours to clean up, however stale it looks — say it is there and let the user decide.
+
+If several PRs merge at once, do steps 1–3 in stack order, bottom-up.
