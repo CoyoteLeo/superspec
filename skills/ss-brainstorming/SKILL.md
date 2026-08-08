@@ -98,7 +98,7 @@ Tasks for each mode. Create todos and complete in order.
 2. **Propose mode** — confirm One-shot (see Mode Selection)
 3. **Scaffold design.md** — create `changes/YYYY-MM-DD-<topic>/` and write `design.md` directly from user-supplied context, in a single pass
 4. **Subagent review** — dispatch reviewer with codebase verification (see Subagent Review)
-5. **Invoke ss-writing-plans with One-shot signal** — pass the change directory and state `mode: one-shot` in the handoff message; ss-writing-plans will generate `plan.md` and `tasks.md` and skip its execution-mode prompt (defaults to Subagent-Driven), keeping the pass continuous
+5. **Invoke ss-writing-plans with One-shot signal** — pass the change directory and state `mode: one-shot` in the handoff message; ss-writing-plans will generate `plan.md` and `tasks.md` without pausing, keeping the pass continuous
 6. **Bundled user review** — once all three artifacts exist, ask the user to review them together; revise any of them based on feedback
 
 ## Process Flow
@@ -201,14 +201,6 @@ When the subagent returns:
 - **Issues found** → fix each one (or, for an issue where you disagree, note your reasoning in `design.md` so the user can adjudicate), then re-dispatch the reviewer on the updated file. Loop until approved.
 
 **Calibration:** the reviewer is instructed to flag only issues that would cause real problems during planning or implementation. Minor wording is not an issue.
-
-### When the reviewer never returns
-
-Subagents sometimes finish the work and go idle without emitting a report. That is a harness failure, not an approval — and it is common enough that this skill must say what to do, or the flow silently degrades into the self-review it just forbade.
-
-1. **Re-dispatch once, with the report as a file.** Give the reviewer an absolute output path and tell it its final text output should be one line (`report written`). A report on disk does not depend on the return channel.
-2. **Still nothing → verify it yourself, and say so.** Do the verification the reviewer would have done (open every cited file, check every symbol). Do not keep re-spawning reviewers; a repeatedly-dead channel does not heal, and fleets of stuck agents are their own problem.
-3. **Disclose, every time.** When you reach step 2, tell the user in plain words that **the fresh-context review did not happen** and that the verification below was done by the same context that wrote the document. Never present self-verification as if the review gate passed — the whole point of this section is that authors rubber-stamp their own work, and that risk is unchanged by the reviewer being unreachable.
 
 ## User Review Gate
 

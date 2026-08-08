@@ -35,6 +35,8 @@ Before defining tasks, map out which files will be created or modified and what 
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
 
+**Also state the PR grouping.** Say which tasks land in which PR, what each PR's base is (a stacked PR is based on the previous PR's branch, not on the base branch), and any ordering constraint with its reason — e.g. a backend PR must merge before the frontend PR that calls its new endpoint. The execution skill needs this to open the right PRs; leaving it implicit means the stack gets guessed.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
@@ -43,7 +45,7 @@ This structure informs the task decomposition. Each task should produce self-con
 - "Implement the minimal code to make the test pass" - step
 - "Run the tests and make sure they pass" - step
 
-**Note:** Do NOT include git commit steps in plans. The user handles their own git workflow.
+**Note:** Do NOT put git steps inside a task's steps. Branching, committing, pushing and opening the PR happen at the PR-group boundary and are the controller's job (see ss-subagent-driven-development → *Worktrees and Stacked PRs*), not a step an implementer subagent performs. Task steps stay code + test only.
 
 ## Plan Document Header
 
@@ -106,7 +108,7 @@ Expected: PASS
 - Exact commands with expected output
 - Reference relevant skills with @ syntax
 - DRY, YAGNI, TDD
-- No git write commands (commit, push, merge) — the user handles git
+- No git steps inside tasks — the PR flow lives at the group boundary, and the user is the one who merges
 
 ## Subagent Review
 
@@ -119,8 +121,6 @@ When the subagent returns:
 - **Issues found** → fix each one (or, for an issue where you disagree, note your reasoning in `plan.md` so the user can adjudicate), then re-dispatch the reviewer on the updated file. Loop until approved.
 
 **Calibration:** the reviewer is instructed to flag only issues that would cause an implementer to build the wrong thing or get stuck. Minor wording is not an issue.
-
-**If the reviewer never returns**, follow the same three steps as `ss-brainstorming` → *When the reviewer never returns*: re-dispatch once with the report written to an absolute file path, then verify it yourself, and **tell the user the fresh-context review did not happen**. This matters more for a plan than for a design: a plan's `file:line` citations, symbol names and test-helper assumptions are exactly what drifts, and an unverified plan hands those errors straight to the implementer.
 
 ## Tasks.md Generation
 
@@ -148,15 +148,6 @@ Each line corresponds to a `### Task N` section in the plan. Execution skills wi
 After saving the plan and tasks.md:
 
 - Announce: "Plan complete and saved to `/abs/path/to/changes/YYYY-MM-DD-<topic>/plan.md`. Tasks tracked in `tasks.md`." Use the **absolute** path — the user often opens these from a different terminal or worktree.
-- Then decide the execution mode based on the **One-shot signal**:
+- Then hand off. **There is no execution-mode question** — execution is always subagent-driven, in a worktree, shipping as stacked PRs.
 
-**If invoked with `mode: one-shot`** (handoff from ss-brainstorming One-shot, or user explicitly states one-shot):
-- Skip the execution-mode prompt — default to **Subagent-Driven**
-- This preserves the One-shot promise of a continuous pass (design → plan → tasks → execution without intermediate prompts)
-- User still gets the bundled review gate before execution actually starts (back in ss-brainstorming)
-
-**Otherwise (Standard mode or no signal)** — use AskUserQuestion with these options:
-- **Subagent-Driven (Recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration
-- **Inline Mode** — Execute tasks directly in this session, batch execution with checkpoints
-
-**REQUIRED SUB-SKILL:** Use ss-subagent-driven-development (subagent mode or inline mode)
+**REQUIRED SUB-SKILL:** Use ss-subagent-driven-development.
