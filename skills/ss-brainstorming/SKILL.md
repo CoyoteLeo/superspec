@@ -84,7 +84,7 @@ Tasks for each mode. Create todos and complete in order.
 
 1. **Explore project context** — files, docs, recent commits
 2. **Propose mode** — confirm Standard (see Mode Selection)
-3. **Ask clarifying questions** — one at a time; purpose, constraints, success criteria
+3. **Ask the frontier, round by round** — every currently-answerable question in one round (see Frontier Rounds); purpose, constraints, success criteria
 4. **Propose 2–3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to complexity; approval after each section
 6. **Write design doc** — create `changes/YYYY-MM-DD-<topic>/`; save `design.md`
@@ -107,7 +107,8 @@ Tasks for each mode. Create todos and complete in order.
 digraph brainstorming {
     "Explore project context" [shape=box];
     "Propose mode" [shape=diamond];
-    "Ask clarifying questions" [shape=box];
+    "Ask the frontier round" [shape=box];
+    "Frontier empty?" [shape=diamond];
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves design?" [shape=diamond];
@@ -118,9 +119,11 @@ digraph brainstorming {
     "Invoke ss-writing-plans" [shape=doublecircle];
 
     "Explore project context" -> "Propose mode";
-    "Propose mode" -> "Ask clarifying questions" [label="Standard"];
+    "Propose mode" -> "Ask the frontier round" [label="Standard"];
     "Propose mode" -> "Scaffold design doc (One-shot)" [label="One-shot"];
-    "Ask clarifying questions" -> "Propose 2-3 approaches";
+    "Ask the frontier round" -> "Frontier empty?";
+    "Frontier empty?" -> "Ask the frontier round" [label="no, recompute"];
+    "Frontier empty?" -> "Propose 2-3 approaches" [label="yes"];
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
@@ -136,6 +139,30 @@ digraph brainstorming {
 
 **The terminal state is invoking ss-writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill from ss-brainstorming.
 
+## Frontier Rounds
+
+Standard mode's questioning is a **design tree**: every decision branches into the decisions that hang off it. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask *now* without guessing at answers you haven't heard yet.
+
+Work the tree in rounds. **Ask the whole frontier in one round**, then wait. The user's answers push the frontier outward and unblock the questions that depended on them; recompute it and ask the next round. A question whose answer depends on another question still open in this round belongs to a *later* round, not this one. You are done when the frontier is empty — every branch visited, nothing silently assumed.
+
+One question per message is not caution, it is latency: it costs a round-trip per question when the dependency structure only demands one per level of the tree. Dumping every question at once is the opposite failure — it makes the user answer questions whose premises are still open. The frontier is the line between the two.
+
+### Asking a round with AskUserQuestion
+
+Every frontier question goes through AskUserQuestion. The tool takes **at most 4 questions per call**, with 2–4 options each, so a frontier wider than four is several calls back to back — still one round, just more than one card.
+
+- **Lead with your recommendation.** Put it first, suffix the label with `(Recommended)`, and give the reasoning in that option's `description`. A batched question with no recommended answer degrades into a questionnaire — it hands the user the design work you were supposed to have done.
+- A genuinely open-ended question (no discrete options worth listing) falls back to prose, in the same message as the round's tool calls.
+- Never ask the user to type A, B, C.
+
+### Finding facts is your job, never the user's
+
+When a frontier question needs a fact from the environment — an existing pattern, who calls what, the shape of a schema, whether a dependency is already there — **dispatch a subagent to find it. Never ask the user for something you could look up.**
+
+Don't block on it either. A running exploration is just another unsettled prerequisite: only the questions downstream of that fact wait for it. Ask the rest of the frontier now and fold the finding into the next round.
+
+The *decisions* are the user's. The *facts* are yours.
+
 ## The Process
 
 **Understanding the idea:**
@@ -143,10 +170,9 @@ digraph brainstorming {
 - Check out the current project state first (files, docs, recent commits)
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
-- For appropriately-scoped projects, ask questions one at a time to refine the idea
-- Prefer multiple choice questions using the AskUserQuestion tool when possible, but open-ended is fine too
-- Only one question per message — if a topic needs more exploration, break it into multiple questions
-- When presenting options, ALWAYS use the AskUserQuestion tool (with its built-in selectable options) instead of asking the user to type A, B, C, etc.
+- For appropriately-scoped projects, work the design tree in frontier rounds (see Frontier Rounds) — one round per level of the tree, not one question per message
+- Every question goes through the AskUserQuestion tool with your recommended answer as the first option; never ask the user to type A, B, C
+- Look a fact up yourself before you spend a question on it (see Finding facts is your job)
 - Focus on understanding: purpose, constraints, success criteria
 
 **Exploring approaches:**
@@ -225,8 +251,9 @@ Revise any of the three based on feedback, then re-run subagent review on whatev
 
 ## Key Principles
 
-- **One question at a time** — Don't overwhelm with multiple questions
-- **Multiple choice preferred** — Use AskUserQuestion tool for selectable options instead of text-based A/B/C
+- **One round at a time** — Ask the whole frontier, then wait; never one question per message
+- **Always recommend** — Every AskUserQuestion option set leads with your recommended answer and its reasoning
+- **Facts are yours, decisions are theirs** — Dispatch a subagent for anything you could look up
 - **YAGNI ruthlessly** — Remove unnecessary features from all designs
 - **Explore alternatives** — Always propose 2-3 approaches before settling (Standard mode)
 - **Incremental validation** — Present design, get approval before moving on (Standard); bundle review at the end (One-shot)
