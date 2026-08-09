@@ -132,8 +132,15 @@ After writing the plan, generate a `tasks.md` file in the same change directory.
 # Tasks: [Feature Name]
 
 **Change:** changes/YYYY-MM-DD-<topic>/
-**Plan:** plan.md
+**Plan:** /abs/path/to/plan.md
 **Design:** design.md *(omit this line if no design.md exists)*
+
+## Execution State
+
+*(scaffold this block empty — the execution skill fills it in)*
+
+**Worktree:** _not started_
+**PRs:** _none yet_
 
 ## Tasks
 
@@ -143,7 +150,11 @@ After writing the plan, generate a `tasks.md` file in the same change directory.
 ...
 ```
 
-Each line corresponds to a `### Task N` section in the plan. Execution skills will mark these `- [x]` as tasks complete, providing persistent cross-session tracking.
+Each task line corresponds to a `### Task N` section in the plan. The execution skill marks these `- [x]`, annotates each one with its commit range and review verdict, and keeps the Execution State block current — together that makes `tasks.md` the change's record of what has actually happened, not just what is left.
+
+**The `Plan:` line is absolute.** After execution starts, `tasks.md` is read from a worktree, from another terminal, or in a session that has forgotten where it came from — a repo-relative path resolves to the wrong file or to nothing.
+
+**Do not split this into a second progress file.** One file per change is the record; a sibling ledger duplicates the task list and the two drift.
 
 ## Execution Handoff
 

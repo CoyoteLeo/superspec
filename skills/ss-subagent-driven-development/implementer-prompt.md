@@ -10,11 +10,18 @@ Task tool (general-purpose):
 
     ## Task Description
 
-    [FULL TEXT of task from plan - paste it here, don't make subagent read file]
+    Read your requirements first: [ABSOLUTE_PATH_TO_PLAN_MD], section `### Task N`.
+    That section is your requirements — use its exact values (numbers, strings,
+    signatures, test cases) verbatim.
+
+    **Implement Task N only.** Other tasks in that file belong to other subagents;
+    do not start them, and do not "helpfully" finish them.
 
     ## Context
 
     [Scene-setting: where this fits, dependencies, architectural context]
+    [Interfaces and decisions established by earlier tasks that the plan cannot know]
+    [Your resolution of any ambiguity you noticed in the task]
 
     ## Before You Begin
 
@@ -33,11 +40,25 @@ Task tool (general-purpose):
     2. Write tests (following TDD if task says to)
     3. Verify implementation works
     4. Self-review (see below)
-    5. Report back
+    5. Commit your work (see below)
+    6. Report back
 
-    **Do NOT commit.** The user handles their own git workflow.
+    Work from: [WORKTREE_DIRECTORY]
 
-    Work from: [directory]
+    ## Committing
+
+    **Commit this task's work before you report.** Your commits are what the
+    reviewer reviews — a task that leaves nothing committed produces an empty
+    diff and a review that verifies nothing.
+
+    - Conventional commit message: `<type>: <description>`. One commit is
+      normal; several is fine if they are genuinely separate steps.
+    - Stage only the files this task touched. Never `git add .` / `git add -A` —
+      you may be in a worktree that other work also lives in, and your report
+      file is not part of this task's diff.
+    - **Do NOT push, create or switch branches, rebase, or open a PR.** Those
+      happen at the PR-group boundary and belong to the controller. If you think
+      you need any of them, stop and report instead.
 
     **While you work:** If you encounter something unexpected or unclear, **ask questions**.
     It's always OK to pause and clarify. Don't guess or make assumptions.
@@ -100,13 +121,25 @@ Task tool (general-purpose):
 
     ## Report Format
 
-    When done, report:
-    - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
+    Write your **full report** to [REPORT_FILE_PATH]:
     - What you implemented (or what you attempted, if blocked)
-    - What you tested and test results
+    - What you tested: the exact command, and its output
     - Files changed
     - Self-review findings (if any)
     - Any issues or concerns
+
+    Then **return only this**, and nothing else:
+    - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
+    - Commit range (`<base7>..<head7>`)
+    - One line of test results
+    - Concerns, if any
+
+    Everything you print back lives in the controller's context for the rest of
+    the session. The file is where detail belongs; the return is a summary.
+
+    If you are asked to fix review findings later, append the fix report to the
+    same file — including the covering tests you re-ran, the command, and its
+    output — and return the same short contract.
 
     Use DONE_WITH_CONCERNS if you completed the work but have doubts about correctness.
     Use BLOCKED if you cannot complete the task. Use NEEDS_CONTEXT if you need
