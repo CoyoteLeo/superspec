@@ -4,7 +4,7 @@ Superspec is a development workflow plugin for Claude Code that combines the bes
 
 ## How it works
 
-When you start building something, Superspec doesn't jump into code. It walks you through a design conversation, writes a spec, creates an implementation plan with persistent task tracking, and then executes it with subagent-driven development and two-stage code review.
+When you start building something, Superspec doesn't jump into code. It walks you through a design conversation, writes a spec, creates an implementation plan with persistent task tracking, and then executes it with subagent-driven development and a per-task code review that gates on both spec compliance and code quality.
 
 What's different from superpowers:
 
@@ -60,7 +60,7 @@ ss-archive → changes/archive/<prefixed-name>/  (source folder)
 
 2. **ss-writing-plans** — Breaks work into bite-sized tasks (2-5 min each) with exact file paths, complete code, and verification steps. Generates `plan.md` and `tasks.md` in the change directory.
 
-3. **ss-subagent-driven-development** — Fresh subagent per task with two-stage review (spec compliance, then code quality). Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent). Works in a git worktree and ships each PR-sized group as its own stacked PR, then verifies CI and answers every review comment inline. Keeps the stack current by rebasing its own branches (`--force-with-lease` only, never a base or shared branch), and cleans up the worktree and branch once you confirm a merge. It never merges — that stays with you.
+3. **ss-subagent-driven-development** — Fresh subagent per task, each committing its own work, followed by one task review that returns both a spec-compliance and a code-quality verdict over the committed diff. Tracks progress in both TodoWrite (in-session) and `tasks.md` (persistent — commit ranges, review verdicts, and open PRs, so it survives compaction). Works in a git worktree and ships each PR-sized group as its own stacked PR, then verifies CI and answers every review comment inline. Keeps the stack current by rebasing its own branches (`--force-with-lease` only, never a base or shared branch), and cleans up the worktree and branch once you confirm a merge. It never merges — that stays with you.
 
 4. **ss-archive** — Moves the completed change folder under `changes/archive/<prefixed-name>/` and promotes the capability it implemented into `specs/<capability>/`: `spec.md` (machine-validatable contract) plus a human-readable `overview.md` companion covering purpose, architecture, scope, integration points, and forward-looking notes.
 
@@ -72,7 +72,7 @@ ss-archive → changes/archive/<prefixed-name>/  (source folder)
 |-------|---------|
 | **ss-brainstorming** | Socratic design refinement → design.md |
 | **ss-writing-plans** | Implementation plans → plan.md + tasks.md |
-| **ss-subagent-driven-development** | Per-task subagent execution with two-stage review |
+| **ss-subagent-driven-development** | Per-task subagent execution with a spec + quality review over each task's committed diff |
 | **ss-archive** | Archive a completed change — moves source folder under `changes/archive/` and writes `specs/<capability>/{spec.md, overview.md}` |
 | **ss-using-superspec** | Introduction to the skills system |
 

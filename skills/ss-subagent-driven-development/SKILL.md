@@ -5,11 +5,11 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+Execute plan by dispatching a fresh subagent per task, with one task review after each that returns two verdicts: spec compliance and code quality.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**Core principle:** Fresh subagent per task + one task review carrying both verdicts = high quality, fast iteration
 
 <GIT-GUARDRAIL>
 You DO drive the branch → commit → push → open-PR → rebase-the-stack → clean-up flow yourself (see *Worktrees and Stacked PRs*).
@@ -46,7 +46,7 @@ This is the only execution mode. Tightly-coupled work that can't be split into i
 
 **What you get:**
 - Fresh subagent per task (no context pollution)
-- Two-stage review after each task: spec compliance first, then code quality
+- One task review after each task, returning both a spec-compliance and a code-quality verdict
 - Faster iteration (no human-in-loop between tasks)
 - Each PR-sized group of tasks lands as its own PR (see *Worktrees and Stacked PRs*)
 
@@ -61,13 +61,11 @@ digraph process {
         "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
         "Implementer subagent asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
-        "Implementer subagent implements, tests, self-reviews" [shape=box];
-        "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
-        "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
-        "Implementer subagent fixes spec gaps" [shape=box];
-        "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
-        "Code quality reviewer subagent approves?" [shape=diamond];
-        "Implementer subagent fixes quality issues" [shape=box];
+        "Implementer subagent implements, tests, self-reviews, commits" [shape=box];
+        "Write review package for BASE..HEAD to a file" [shape=box];
+        "Dispatch task reviewer subagent (./task-reviewer-prompt.md)" [shape=box];
+        "Spec compliant AND quality approved?" [shape=diamond];
+        "Implementer subagent fixes findings" [shape=box];
         "Mark task complete in TodoWrite AND tasks.md" [shape=box];
     }
 
@@ -77,20 +75,17 @@ digraph process {
     "Open PR per group; CI green + every review comment answered inline" [shape=box];
     "Suggest ss-archive" [shape=box style=filled fillcolor=lightgreen];
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
+    "Read plan from change dir, extract all tasks, create TodoWrite, locate tasks.md" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
-    "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
-    "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
-    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
-    "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
-    "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
-    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite AND tasks.md" [label="yes"];
+    "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, self-reviews, commits" [label="no"];
+    "Implementer subagent implements, tests, self-reviews, commits" -> "Write review package for BASE..HEAD to a file";
+    "Write review package for BASE..HEAD to a file" -> "Dispatch task reviewer subagent (./task-reviewer-prompt.md)";
+    "Dispatch task reviewer subagent (./task-reviewer-prompt.md)" -> "Spec compliant AND quality approved?";
+    "Spec compliant AND quality approved?" -> "Implementer subagent fixes findings" [label="no"];
+    "Implementer subagent fixes findings" -> "Write review package for BASE..HEAD to a file" [label="re-review"];
+    "Spec compliant AND quality approved?" -> "Mark task complete in TodoWrite AND tasks.md" [label="yes"];
     "Mark task complete in TodoWrite AND tasks.md" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
@@ -104,11 +99,47 @@ digraph process {
 Use **both** tracking mechanisms:
 
 1. **TodoWrite** (in-session) — ephemeral, dies with the conversation. Use for real-time progress visibility.
-2. **tasks.md** (persistent) — lives in the change directory (`changes/YYYY-MM-DD-<topic>/tasks.md`). Survives across conversations. After each task completes review, mutate the checkbox: `- [ ]` → `- [x]`.
+2. **tasks.md** (persistent) — lives in the change directory (`changes/YYYY-MM-DD-<topic>/tasks.md`). Survives across conversations, and survives compaction.
 
 When marking a task complete, always do both: update TodoWrite AND edit tasks.md.
 
-If resuming a partially-completed plan in a new conversation, read tasks.md first to understand which tasks are already done.
+**`tasks.md` is the record of what happened, not just what is left.** Your own memory of this session does not survive compaction; a controller that has lost its place will happily re-dispatch a task sequence it already finished. Write state down as it happens:
+
+- Flip the checkbox `- [ ]` → `- [x]` when the task's review comes back clean.
+- Annotate the task line underneath with the evidence:
+  `commits <base7>..<head7> · review clean` (or `· 2 findings fixed`).
+- Keep the **Execution State** block at the top of the file current — worktree path, and one line per PR: `PR #123 feat/a → develop (tasks 1-3) · CI green · 4 comments answered`. After a restack, append what moved: `feat/b rebased --onto origin/develop feat/a · force-pushed`.
+
+**After a compaction, trust `tasks.md` and `git log` over your own recollection.** The commits it names exist in git whether or not you remember making them. Resuming a partially-completed plan works the same way: read `tasks.md` first, resume at the first task without an `- [x]`.
+
+**Do not create a second progress file.** One record per change; a sibling ledger duplicates the task list and the two drift apart.
+
+## Commits and the Review Diff
+
+Each implementer commits its own task's work before reporting. This is what makes the review real: the task reviewer reviews a **diff**, and a task that left nothing committed produces an empty diff and a review that approves nothing at all — silently, and marked green.
+
+- **Record BASE before dispatching:** run `git rev-parse HEAD` in the worktree and keep it. That is the task's base.
+- **Never derive the base from `HEAD~1`.** A task that took three commits would silently review only the last one.
+- The implementer commits; it does **not** push, branch, rebase, or open PRs. Those happen at the PR-group boundary and are yours (see *Worktrees and Stacked PRs*).
+- After the fix loop, the re-review's base is the head the previous review saw — review the fix, not the whole task again.
+
+## Handing Work Over as Files
+
+Everything you paste into a dispatch prompt, and everything a subagent prints back, stays in your context for the rest of the session and is re-read on every later turn. A task's full text pasted N times is that text sitting in your context N times.
+
+So hand over **paths**, not contents:
+
+- **The task:** give the implementer the **absolute path to `plan.md`** plus "implement Task N only — do not touch any other task". The subagent spends one Read; its context is disposable, yours is not. Do not paste the task body.
+- **The report:** the implementer writes its full report to `changes/YYYY-MM-DD-<topic>/task-N-report.md` and returns only status, commit range, a one-line test summary, and concerns. Reports belong to the change packet — they are part of its decision trail and get archived with it.
+- **The diff:** write the review package to a file and give the reviewer its path — never let diff output land in your context:
+  ```
+  mkdir -p "$TMPDIR/superspec/<topic>"
+  { git log --oneline BASE..HEAD; git diff --stat BASE..HEAD; git diff -U10 BASE..HEAD; } \
+    > "$TMPDIR/superspec/<topic>/task-N-review.diff"
+  ```
+  **Review packages are scratch, not artifacts** — keep them outside the repo. A diff committed into the change directory duplicates what git already stores, bloats the packet, and gets dragged into the archive forever.
+
+What you still compose yourself is the part no file can carry: one line on where this task fits, the interfaces and decisions earlier tasks established, and your resolution of any ambiguity you spotted. A dispatch prompt describes **one task** — never paste accumulated "state after Tasks 1-3" summaries into later dispatches.
 
 ## Model Selection
 
@@ -129,7 +160,7 @@ Use the least powerful model that can handle each role to conserve cost and incr
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Proceed to spec compliance review.
+**DONE:** Write the review package for BASE..HEAD to a file, then dispatch the task reviewer with its path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns indicate a design mismatch (plan assumptions vs reality), handle as a **design deviation** (see below). If they're about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -181,80 +212,63 @@ After the user decides and any artifact updates are made, resume the normal per-
 ## Prompt Templates
 
 - `./implementer-prompt.md` - Dispatch implementer subagent
-- `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
-- `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
+- `./task-reviewer-prompt.md` - Dispatch task reviewer subagent (spec compliance + code quality, one dispatch)
+- `./code-reviewer.md` - The broad reviewer, used once for the final whole-implementation review
 
 ## Example Workflow
 
 ```
 You: I'm using Subagent-Driven Development to execute this plan.
 
-[Read plan from change dir: changes/YYYY-MM-DD-<topic>/plan.md]
-[Locate tasks.md in same directory for persistent tracking]
-[Extract all 5 tasks with full text and context]
+[Worktree ready; read plan once: /abs/.../changes/2026-08-09-hooks/plan.md — 5 tasks]
+[Locate tasks.md in same directory; Execution State block is empty — fresh start]
 [Create TodoWrite with all tasks]
 
 Task 1: Hook installation script
 
-[Get Task 1 text and context (already extracted)]
-[Dispatch implementation subagent with full task text + context]
+[git rev-parse HEAD → BASE=a1b2c3d]
+[Dispatch implementer: plan.md path, "Task 1 only", scene-setting, report-file path]
 
 Implementer: "Before I begin - should the hook be installed at user or system level?"
 
 You: "User level (~/.config/superpowers/hooks/)"
 
-Implementer: "Got it. Implementing now..."
-[Later] Implementer:
-  - Implemented install-hook command
-  - Added tests, 5/5 passing
-  - Self-review: Found I missed --force flag, added it
+Implementer: [Later] DONE — commits a1b2c3d..d4e5f6a, 5/5 passing, report written.
+  Self-review found a missing --force flag; added it.
 
-[Dispatch spec compliance reviewer]
-Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
+[Write review package a1b2c3d..d4e5f6a to $TMPDIR/superspec/hooks/task-1-review.diff]
+[Dispatch task reviewer with brief context + report path + diff path]
+Task reviewer: Spec ✅ — all requirements met, nothing extra.
+  Strengths: good test coverage, clean. Issues: none. Task quality: Approved.
 
-[Get git SHAs, dispatch code quality reviewer]
-Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
-
-[Mark Task 1 complete]
+[tasks.md: - [x] Task 1 … / commits a1b2c3d..d4e5f6a · review clean]
 
 Task 2: Recovery modes
 
-[Get Task 2 text and context (already extracted)]
-[Dispatch implementation subagent with full task text + context]
+[git rev-parse HEAD → BASE=d4e5f6a]
+[Dispatch implementer: plan.md path, "Task 2 only", interfaces Task 1 established]
 
-Implementer: [No questions, proceeds]
-Implementer:
-  - Added verify/repair modes
-  - 8/8 tests passing
-  - Self-review: All good
+Implementer: DONE — commits d4e5f6a..b7c8d9e, 8/8 passing, report written.
 
-[Dispatch spec compliance reviewer]
-Spec reviewer: ❌ Issues:
-  - Missing: Progress reporting (spec says "report every 100 items")
-  - Extra: Added --json flag (not requested)
+[Write review package d4e5f6a..b7c8d9e to task-2-review.diff; dispatch task reviewer]
+Task reviewer: Spec ❌ — missing progress reporting (spec says "report every 100 items");
+  extra --json flag not requested.
+  Issues (Important): magic number 100. Task quality: Needs fixes.
 
-[Implementer fixes issues]
-Implementer: Removed --json flag, added progress reporting
+[Implementer fixes both, re-runs the covering tests, appends to its report file]
+Implementer: Removed --json, added progress reporting, extracted PROGRESS_INTERVAL. 10/10 passing.
 
-[Spec reviewer reviews again]
-Spec reviewer: ✅ Spec compliant now
+[Write review package b7c8d9e..e1f2a3b (the fix range only); re-dispatch]
+Task reviewer: Spec ✅. Both findings addressed (recovery.js:41, recovery.js:7). Approved.
 
-[Dispatch code quality reviewer]
-Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
-
-[Implementer fixes]
-Implementer: Extracted PROGRESS_INTERVAL constant
-
-[Code reviewer reviews again]
-Code reviewer: ✅ Approved
-
-[Mark Task 2 complete]
+[tasks.md: - [x] Task 2 … / commits d4e5f6a..e1f2a3b · 2 findings fixed]
 
 ...
 
-[After all tasks]
-[Dispatch final code reviewer subagent]
+[After all tasks: dispatch final code reviewer over the whole implementation]
 Final reviewer: All requirements met, ready to merge
+
+[Open the PR for this group; tasks.md Execution State gets the PR line]
 
 Done!
 ```
@@ -273,21 +287,18 @@ Done!
 - Review checkpoints automatic
 
 **Efficiency gains:**
-- No file reading overhead (controller provides full text)
+- Artifacts move as file paths, so plan text and diffs never accumulate in the controller's context
 - Controller curates exactly what context is needed
-- Subagent gets complete information upfront
 - Questions surfaced before work begins (not after)
 
 **Quality gates:**
 - Self-review catches issues before handoff
-- Two-stage review: spec compliance, then code quality
+- One task review carrying both verdicts: spec compliance prevents over/under-building, code quality ensures it is well-built
 - Review loops ensure fixes actually work
-- Spec compliance prevents over/under-building
-- Code quality ensures implementation is well-built
+- Every review reads a real committed diff, so an empty task cannot pass
 
 **Cost:**
-- More subagent invocations (implementer + 2 reviewers per task)
-- Controller does more prep work (extracting all tasks upfront)
+- More subagent invocations (implementer + 1 reviewer per task)
 - Review loops add iterations
 - But catches issues early (cheaper than debugging later)
 
@@ -295,17 +306,19 @@ Done!
 
 **Never:**
 - Start implementation on main/master branch without explicit user consent
-- Skip reviews (spec compliance OR code quality)
+- Skip the task review, or accept a review report missing either verdict
 - Proceed with unfixed issues
 - Dispatch multiple implementation subagents in parallel (conflicts)
-- Make subagent read plan file (provide full text instead)
+- **Paste a task's full text into a dispatch prompt** — hand over the path to `plan.md` and name the task
+- **Dispatch a reviewer without a committed diff** — an empty range produces an approval that means nothing
+- Derive a task's base from `HEAD~1` instead of the BASE you recorded before dispatching
+- Let `git diff` output land in your own context instead of a file
 - Skip scene-setting context (subagent needs to understand where task fits)
 - Ignore subagent questions (answer before letting them proceed)
-- Accept "close enough" on spec compliance (spec reviewer found issues = not done)
+- Accept "close enough" on spec compliance (reviewer found issues = not done)
 - Skip review loops (reviewer found issues = implementer fixes = review again)
-- Let implementer self-review replace actual review (both are needed)
-- **Start code quality review before spec compliance is ✅** (wrong order)
-- Move to next task while either review has open issues
+- Let implementer self-review replace the task review (both are needed)
+- Move to next task while the review has open issues
 - Silently deviate from design intent without surfacing it (see Design and Plan Are Living Documents)
 - Decide to update or skip artifacts on behalf of the user (always escalate)
 
